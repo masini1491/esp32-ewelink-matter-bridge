@@ -42,4 +42,6 @@ Evidence levels and current Pending authority are defined in `VALIDATION.md`; up
 
 ## Current scope boundary
 
-S1 is documentation/contract work only. The next authorized candidate is S2 software-first foundation; it does not authorize live LAN operations, hardware control, commissioning, production firmware or additional device families.
+S2A froze the released build authority in `docs/build.md`: ESP-IDF `v5.5.5`, esp-matter component `1.6.0`, and ESP32-S3-WROOM-1-N16R8 (16 MB flash / 8 MB Octal PSRAM) build profile. The module profile is not a purchased/validated board or product pinout.
+
+The next candidate remains S2B software-first portable foundation. S2A does not authorize S2B/S2C implementation, live LAN operations, hardware control, commissioning, production firmware or additional device families.

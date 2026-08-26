@@ -7,7 +7,7 @@
 - 目標 Repository：`masini1491/esp32-ewelink-matter-bridge`
 - 預期 Branch：`main`
 - Bootstrap 與 S1 Architecture / Contract Freeze 已完成；durable authority 見 `docs/architecture.md`、`docs/references/README.md`、`docs/references/sources/upstream-sources.md` 與 `VALIDATION.md`。
-- Framework 已 freeze 為 **ESP-IDF + esp-matter**；primary target family 為 **ESP32-S3**。S2A 必須先 pin 官方相容 released version pair，並選定可重現的 PSRAM-capable ESP32-S3 build target/module profile，之後才可做 target-specific compile adapter。
+- Framework/build authority 已 freeze 為 **ESP-IDF `v5.5.5` + esp-matter component `1.6.0`**；primary target/module profile 為 **ESP32-S3-WROOM-1-N16R8**（16 MB flash / 8 MB Octal PSRAM）。詳細 bootstrap、partition 與 S2C compile gate 見 `docs/build.md`；carrier/product board 仍未選定或驗證。
 - 專案目標：建立 ESP32-based、local-first 的 eWeLink LAN → Matter Bridge；第一個真實 consumer 為 `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03` 類多路 Wi-Fi switch。
 - 第一個 Matter mapping：4-channel binary switch → 4 × Matter On/Off bridged endpoints。
 - 不預設 Home Assistant、Raspberry Pi、eWeLink Cloud 或 Internet 為日常控制依賴。
@@ -18,25 +18,6 @@
 # S2 — Software-first foundation
 
 S2 採 sequential gates。**先執行 S2A；S2A 完成並 review 前，不自行開始 S2B/S2C。** 這是為避免 dependency/version/target 尚未固定就產生需要重做的 source/build work。
-
-## S2A — Build Authority / Reproducible Target Gate
-
-- [ ] **S2A1 — Released dependency pair**：以 Espressif 官方 release / compatibility evidence pin 一組 released `ESP-IDF + esp-matter` version pair；不得使用 floating `main` 作正式 build authority。記錄 exact version/tag/commit、官方相容性來源與取得方式。
-- [ ] **S2A2 — ESP32-S3 build target profile**：選定一個可重現、PSRAM-capable 的 ESP32-S3 module/board build profile，記錄 target、module/board identity、flash、PSRAM、最低 partition requirement、USB/power/pinout 是否屬於 build authority。若實際 PCB/板型尚未購買，允許 freeze「module/build profile」而不是實體開發板，但不得假裝 hardware 已選購或驗證。
-- [ ] **S2A3 — Toolchain/bootstrap contract**：建立最低充分的 dependency/bootstrap/build authority 文件或 manifest；優先使用官方推薦方式，不 vendor 整份 esp-matter / ConnectedHomeIP。記錄 host prerequisites 與可重現 setup，但不需要在本 Stage 建 production firmware。
-- [ ] **S2A4 — Compile-gate design**：定義 S2C 未來 compile-only harness 應如何證明 selected target + esp-matter bridge API 真正參與 compile/link。此 Stage 可做最小 dependency/toolchain smoke check；若 smoke check 需要新增 source，僅允許 build-probe 級別，不得開始 eWeLink/Matter application implementation。
-- [ ] **S2A5 — Durable sync**：更新 build authority、architecture/roadmap/validation/reference revision（只有 upstream revisit 真有變化時）與 `AGENTS.md` 必要 project-specific contract。README 只需使用者可理解的最小狀態，不堆砌 setup 細節。
-
-### S2A success / STOP
-
-S2A 完成必須同時成立：
-
-1. released ESP-IDF + esp-matter pair 已 pinned 且有官方 compatibility evidence；
-2. ESP32-S3 PSRAM-capable build profile 已可重現，flash/PSRAM/partition 假設明確；
-3. dependency/bootstrap authority 不依賴 floating branches；
-4. 未建立 production eWeLink runtime 或 Matter app；
-5. validation 清楚標記 build/toolchain evidence，不宣稱 network/hardware/interoperability；
-6. commit / push 後 STOP，等待 ChatGPT review，再授權 S2B。
 
 ## S2B — Portable Protocol / Device-Model Foundation（S2A review 後才可執行）
 

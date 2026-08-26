@@ -12,6 +12,7 @@
 - Observations：bridge component exposes create/resume/remove bridged device APIs，並保存 parent endpoint、device endpoint 與 device type 的 persistent info；bridge examples 明確包含 runtime add/remove 的 `bridge_cli`。
 - Reuse boundary：可依 Apache-2.0 與後續 dependency/version decision 使用官方 SDK/API；不要 copy example application wholesale。Matter data model、commissioning、fabric 與 bridged endpoint lifecycle 應交給此 SDK。
 - Limitations / do-not-assume：SDK API 存在不代表本專案的 eWeLink device discovery、crypto、state convergence 或 controller interoperability 已被證實；`main` 不是未來 implementation 可直接浮動採用的 version pin。
+- S2A build authority update：released Component Registry `espressif/esp_matter` `1.6.0`, source revision `81e4abe329deaef3e316b32e6768858c8f41e000`, is paired with ESP-IDF `v5.5.5` by that revision's official README. Exact bootstrap/target/partition decisions are `docs/build.md`; this replaces no S1 research provenance and introduces no vendored source.
 
 ## project-chip/connectedhomeip
 

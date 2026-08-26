@@ -7,12 +7,12 @@
 | Level | S1 decision | Rationale / boundary |
 | --- | --- | --- |
 | Platform class | ESP32 Wi-Fi Matter Bridge | Local Wi-Fi bridge with BLE commissioning; no Thread requirement in v1. |
-| Framework | ESP-IDF + esp-matter | Espressif's official SDK exposes bridge lifecycle APIs and bridge examples, unlike the higher-level Arduino Matter wrapper. |
+| Framework | ESP-IDF `v5.5.5` + esp-matter component `1.6.0` | Released official pair; esp-matter exposes bridge lifecycle APIs and bridge examples, unlike the higher-level Arduino Matter wrapper. See `docs/build.md`. |
 | Primary target family | ESP32-S3 | Wi-Fi + BLE, dual-core operation and PSRAM-capable modules offer the lowest sufficient practical margin for Matter plus a LAN bridge and four endpoints. |
 | Compatibility candidates | ESP32-C6; ESP32-C3 only after budget evidence | C6 adds 802.15.4/Thread but v1 uses Wi-Fi; C3's single core and smaller SRAM make it a constrained option. Neither is a v1 target without a new resource/compile review. |
-| Concrete target | Not frozen | Before S2 target-specific adapter work, select an ESP32-S3 module/board with BLE, sufficient flash and PSRAM, then record module, flash/PSRAM, partition and power/USB constraints. No pinout is frozen. |
+| Module/build profile | ESP32-S3-WROOM-1-N16R8 | 16 MB Quad-SPI flash + 8 MB Octal-SPI PSRAM; carrier, product PCB and pinout remain unfrozen and hardware-pending. |
 
-The selected dependency is the ESP-IDF/esp-matter family, not floating upstream `main`. Before S2 uses it, pin an officially compatible released ESP-IDF + esp-matter pair and record it in the build authority. That bounded version gate does not reopen the framework/target-family decision.
+The selected dependency pair is released ESP-IDF `v5.5.5` plus esp-matter component `1.6.0`, not floating upstream `main`. Exact revisions, bootstrap and the S2C compile-only gate are in `docs/build.md`.
 
 Official S1 comparison evidence: ESP32-C3 provides Wi-Fi/BLE on a single core with 400 KB SRAM; ESP32-C6 adds Wi-Fi 6/BLE/802.15.4 on a single core with 512 KB HP SRAM; ESP32-S3 provides Wi-Fi/BLE, dual cores, 512 KB internal SRAM and modules with PSRAM support. These capabilities are selection evidence, not a compile or hardware pass.
 

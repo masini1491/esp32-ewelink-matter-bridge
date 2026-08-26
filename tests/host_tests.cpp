@@ -125,16 +125,17 @@ void TestModelPendingAndConvergence() {
     bridge_core::UnifiedDeviceModel model(Identity());
     model.MarkReconnected();
     EXPECT_TRUE(model.availability() == bridge_core::Availability::kAvailable);
-    EXPECT_TRUE(!model.channel(0).fresh);
+    EXPECT_TRUE(model.FindChannel(bridge_core::kChannelCount) == nullptr);
+    EXPECT_TRUE(!model.FindChannel(0)->fresh);
     const bridge_core::CommandIntent intent{0, bridge_core::BinaryState::kOn, "seq-9"};
     EXPECT_TRUE(model.IssueCommand(intent) == bridge_core::Status::kOk);
-    EXPECT_TRUE(model.channel(0).observed_state == bridge_core::BinaryState::kUnknown);
+    EXPECT_TRUE(model.FindChannel(0)->observed_state == bridge_core::BinaryState::kUnknown);
     EXPECT_TRUE(model.MarkTransportAccepted(0) == bridge_core::Status::kOk);
-    EXPECT_TRUE(model.channel(0).pending.has_value());
+    EXPECT_TRUE(model.FindChannel(0)->pending.has_value());
     EXPECT_TRUE(model.ApplyObservation(0, bridge_core::BinaryState::kOn) == bridge_core::Status::kOk);
-    EXPECT_TRUE(model.channel(0).convergence == bridge_core::Convergence::kMatched);
-    EXPECT_TRUE(!model.channel(0).pending.has_value());
-    EXPECT_TRUE(model.channel(0).fresh);
+    EXPECT_TRUE(model.FindChannel(0)->convergence == bridge_core::Convergence::kMatched);
+    EXPECT_TRUE(!model.FindChannel(0)->pending.has_value());
+    EXPECT_TRUE(model.FindChannel(0)->fresh);
 }
 
 void TestModelConflictAndAvailability() {
@@ -144,14 +145,14 @@ void TestModelConflictAndAvailability() {
     EXPECT_TRUE(model.IssueCommand({1, bridge_core::BinaryState::kOn, "seq-2"}) == bridge_core::Status::kOk);
     EXPECT_TRUE(model.MarkTransportAccepted(1) == bridge_core::Status::kOk);
     EXPECT_TRUE(model.ApplyObservation(1, bridge_core::BinaryState::kOff) == bridge_core::Status::kOk);
-    EXPECT_TRUE(model.channel(1).convergence == bridge_core::Convergence::kConflicted);
+    EXPECT_TRUE(model.FindChannel(1)->convergence == bridge_core::Convergence::kConflicted);
     model.MarkDisconnected();
     EXPECT_TRUE(model.availability() == bridge_core::Availability::kUnavailable);
-    EXPECT_TRUE(model.channel(1).observed_state == bridge_core::BinaryState::kOff);
-    EXPECT_TRUE(!model.channel(1).fresh);
+    EXPECT_TRUE(model.FindChannel(1)->observed_state == bridge_core::BinaryState::kOff);
+    EXPECT_TRUE(!model.FindChannel(1)->fresh);
     model.MarkReconnected();
     EXPECT_TRUE(model.availability() == bridge_core::Availability::kAvailable);
-    EXPECT_TRUE(!model.channel(1).fresh);
+    EXPECT_TRUE(!model.FindChannel(1)->fresh);
     EXPECT_TRUE(model.ApplyObservation(1, bridge_core::BinaryState::kUnknown) == bridge_core::Status::kInvalidState);
 }
 
@@ -160,7 +161,7 @@ void TestFourChannelIsolationAndBindings() {
     model.MarkReconnected();
     EXPECT_TRUE(model.ApplyObservation(0, bridge_core::BinaryState::kOn) == bridge_core::Status::kOk);
     EXPECT_TRUE(model.ApplyObservation(3, bridge_core::BinaryState::kOff) == bridge_core::Status::kOk);
-    EXPECT_TRUE(model.channel(1).observed_state == bridge_core::BinaryState::kUnknown);
+    EXPECT_TRUE(model.FindChannel(1)->observed_state == bridge_core::BinaryState::kUnknown);
     const auto bindings = bridge_core::BuildOnOffBindings(Identity());
     EXPECT_TRUE(bindings[0].stable_binding_key != bindings[1].stable_binding_key);
     EXPECT_TRUE(bindings[2].stable_binding_key != bindings[3].stable_binding_key);
@@ -176,12 +177,12 @@ void TestFakeTransport() {
     bridge_core::CommandOrchestrator orchestrator(transport);
     EXPECT_TRUE(orchestrator.Submit(model, {2, bridge_core::BinaryState::kOn, "seq-3"}) == bridge_core::Status::kOk);
     EXPECT_TRUE(transport.requests.size() == 1);
-    EXPECT_TRUE(model.channel(2).disposition == bridge_core::TransportDisposition::kAccepted);
-    EXPECT_TRUE(model.channel(2).observed_state == bridge_core::BinaryState::kUnknown);
+    EXPECT_TRUE(model.FindChannel(2)->disposition == bridge_core::TransportDisposition::kAccepted);
+    EXPECT_TRUE(model.FindChannel(2)->observed_state == bridge_core::BinaryState::kUnknown);
     transport.next = bridge_core::Status::kUnsupported;
     EXPECT_TRUE(orchestrator.Submit(model, {3, bridge_core::BinaryState::kOff, "seq-4"}) == bridge_core::Status::kUnsupported);
-    EXPECT_TRUE(model.channel(3).disposition == bridge_core::TransportDisposition::kRejected);
-    EXPECT_TRUE(model.channel(3).convergence == bridge_core::Convergence::kRejected);
+    EXPECT_TRUE(model.FindChannel(3)->disposition == bridge_core::TransportDisposition::kRejected);
+    EXPECT_TRUE(model.FindChannel(3)->convergence == bridge_core::Convergence::kRejected);
 }
 
 }  // namespace

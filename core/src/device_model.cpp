@@ -2,8 +2,6 @@
 
 #include <utility>
 
-#include <stdexcept>
-
 #include "bridge_core/transport.hpp"
 
 namespace bridge_core {
@@ -12,9 +10,8 @@ UnifiedDeviceModel::UnifiedDeviceModel(DeviceIdentity identity) : identity_(std:
 
 bool UnifiedDeviceModel::IsChannel(const std::uint8_t index) const { return index < kChannelCount; }
 
-const ChannelSnapshot& UnifiedDeviceModel::channel(const std::uint8_t index) const {
-    if (!IsChannel(index)) throw std::out_of_range("channel index");
-    return channels_[index];
+const ChannelSnapshot* UnifiedDeviceModel::FindChannel(const std::uint8_t index) const {
+    return IsChannel(index) ? &channels_[index] : nullptr;
 }
 
 Status UnifiedDeviceModel::IssueCommand(const CommandIntent& intent) {

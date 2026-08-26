@@ -37,7 +37,7 @@ public:
 
     const DeviceIdentity& identity() const { return identity_; }
     Availability availability() const { return availability_; }
-    const ChannelSnapshot& channel(std::uint8_t index) const;
+    const ChannelSnapshot* FindChannel(std::uint8_t index) const;
 
     Status IssueCommand(const CommandIntent& intent);
     Status MarkTransportAccepted(std::uint8_t channel);

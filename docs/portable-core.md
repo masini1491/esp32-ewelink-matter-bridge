@@ -32,6 +32,7 @@ Synthetic vector values are deliberately non-secret. The fixed IV exists only in
 ## Unified Device Model and mapping
 
 - A model has canonical `source_namespace + device_id`, separate availability, and four channels `0..3`.
+- `FindChannel()` returns `nullptr` for an out-of-range channel; the portable API does not use C++ exceptions, so it remains valid for ESP-IDF's exception-disabled target build.
 - Each channel has observed `on` / `off` / `unknown`, freshness, optional pending intent, transport disposition and convergence outcome.
 - Creating or accepting a command does not mutate observed state. Only a valid `on`/`off` observation changes it.
 - Disconnect/staleness makes availability unavailable and freshness false without manufacturing an on/off value. Reconnect restores availability only; a new observation is required for freshness.

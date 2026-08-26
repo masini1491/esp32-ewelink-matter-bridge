@@ -13,20 +13,27 @@ jobs:
       - uses: actions/checkout@v4
       - name: Configure host tests
         run: cmake -S . -B build/host -DBRIDGE_BUILD_HOST_TESTS=ON
+      - name: Build host tests
+        run: cmake --build build/host
       - name: Run host tests
         run: ctest --test-dir build/host --output-on-failure
 
   esp32c3-compile:
     runs-on: ubuntu-latest
     container: espressif/idf:v5.5.5
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - name: Build constrained C3 compile probe
         run: |
+          . /opt/esp/idf/export.sh
           idf.py -C platform/esp32c3_probe set-target esp32c3
           idf.py -C platform/esp32c3_probe build
       - name: Capture compile evidence
         run: |
+          . /opt/esp/idf/export.sh
           mkdir -p evidence
           cp platform/esp32c3_probe/dependencies.lock evidence/
           cp platform/esp32c3_probe/sdkconfig evidence/

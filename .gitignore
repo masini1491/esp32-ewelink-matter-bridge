@@ -1,0 +1,34 @@
+# ESP32 / embedded build output
+.pio/
+build/
+out/
+*.elf
+*.bin
+*.hex
+*.map
+
+# IDE metadata
+.vscode/
+.idea/
+*.code-workspace
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+tmp/
+temp/
+
+# Secrets and local configuration
+.env
+.env.*
+*.pem
+*.key
+secrets/
+local_data/
+private_data/
+
+# OS files
+.DS_Store
+Thumbs.db

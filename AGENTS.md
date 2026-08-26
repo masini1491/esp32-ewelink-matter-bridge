@@ -34,7 +34,7 @@ Evidence levels and current Pending authority are defined in `VALIDATION.md`; up
 
 ## S1 architecture / contract authority
 
-- S1 freezes ESP-IDF + esp-matter as the Matter framework direction and ESP32-S3 as the primary target family. Concrete module/board, flash/PSRAM/partition profile and exact released dependency pair remain a required Stage 2 gate.
+- S1 froze ESP-IDF + esp-matter as the Matter framework direction and ESP32-S3 as the primary target family; S2A subsequently resolved the released dependency pair and reproducible module/flash/PSRAM build profile. A physical board/pinout and target compile evidence remain separate, later gates.
 - Contract dependency direction is `eWeLink Transport → eWeLink Protocol / Registry → Unified Device Model → Matter Adapter / Bridge → Matter over Wi-Fi`. Platform/Matter adapters depend on portable core; portable core must not expose ESP-IDF, FreeRTOS or Matter types.
 - The first consumer is limited to `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03` as four binary channels mapped to four bridged Matter On/Off endpoints. Other device families/UIIDs are not authorized without a new Stage.
 - Matter endpoint identity must bind stably to canonical device identity plus channel index, not discovery order. Exact device LAN behavior remains upstream/hardware-pending until separately evidenced.
@@ -44,4 +44,6 @@ Evidence levels and current Pending authority are defined in `VALIDATION.md`; up
 
 S2A froze the released build authority in `docs/build.md`: ESP-IDF `v5.5.5`, esp-matter component `1.6.0`, and ESP32-S3-WROOM-1-N16R8 (16 MB flash / 8 MB Octal PSRAM) build profile. The module profile is not a purchased/validated board or product pinout.
 
-The next candidate remains S2B software-first portable foundation. S2A does not authorize S2B/S2C implementation, live LAN operations, hardware control, commissioning, production firmware or additional device families.
+S2B portable core is governed by `docs/portable-core.md`. It remains independent of ESP-IDF/Matter and has Host PASS only; no live LAN/device/Matter runtime evidence exists.
+
+The next candidate is S2C compile-only integration. It is not authorized by S2B completion and must not begin without a new explicit launch. Live LAN operations, hardware control, commissioning, production firmware and additional device families remain out of scope.

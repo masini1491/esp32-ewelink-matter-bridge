@@ -28,3 +28,10 @@ No validation level may be promoted across the table by inference.
 - Static/Test PASS: released version/revision resolution, official compatibility/partition evidence, target/module/flash/PSRAM consistency, no-floating-branch audit, secret scan and scope review.
 - Local toolchain / dependency resolver smoke: not run. No SDK was downloaded or installed.
 - Compile / Network / Hardware / Matter interoperability: not run. S2C's required compile-gate evidence is frozen in `docs/build.md`.
+
+## S2B portable-core evidence
+
+- Static/Test PASS: deterministic envelope codec checks, malformed/missing/oversized/unsupported boundaries, synthetic CNG-backed MD5/AES-CBC/PKCS#7/Base64 vector, model transitions, four-channel isolation, stable binding keys, FakeTransport behavior, dependency-direction and secret/license audits.
+- Host PASS: the MSVC x64 developer environment compiled `core/src/binding.cpp`, `core/src/device_model.cpp`, `core/src/envelope.cpp`, `tests/windows_cng_crypto_provider.cpp` and `tests/host_tests.cpp`; `bridge_host_tests.exe` passed all eight test groups.
+- Toolchain note: CMake/Ninja was unavailable and the local Visual Studio CMake generator could not complete its ABI probe because no usable build program was configured. This did not prevent direct MSVC compilation of the same source list; it is a local `TOOLCHAIN` limitation, not a source failure.
+- Compile / Network / Hardware / Matter interoperability: not run. No ESP-IDF, esp-matter or network/hardware runtime participated.

@@ -40,6 +40,8 @@ Matter over Wi-Fi
 
 Dependency direction is inward: platform/runtime adapters depend on the portable core; the portable core must not expose or depend on ESP-IDF, FreeRTOS or Matter implementation types. This is library-ready only: no package, separate repository or speculative generalization is created.
 
+S2B implements this portable boundary in `core/`; its exact codec, crypto-provider, model and host-test contracts are in `docs/portable-core.md`.
+
 ## First consumer capability contract
 
 Scope is only `CK-BL602-4SW-HS` and `CK-BL602-4SW-HS-03` as a 4-channel binary switch. Other device families and UIIDs are out of scope.

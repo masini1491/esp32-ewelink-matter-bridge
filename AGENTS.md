@@ -30,6 +30,16 @@ Authority hierarchy：user 當次明確指示 → 本 repository 最新正式 go
 
 文件、靜態檢查與 compile evidence 不等同於 runtime、device、bench 或 hardware validation。沒有實體 evidence 時，hardware validation 必須保持 Pending，不得推論為通過。
 
-## Current bootstrap boundary
+Evidence levels and current Pending authority are defined in `VALIDATION.md`; upstream provenance routing is `docs/references/README.md`; project contracts are `docs/architecture.md`.
 
-本 repository 目前仍處於 bootstrap；architecture、framework、target MCU（包含 C3、C6、S3 等選擇）與 protocol contract 尚未 freeze。不得由本檔案推導產品實作方向。
+## S1 architecture / contract authority
+
+- S1 freezes ESP-IDF + esp-matter as the Matter framework direction and ESP32-S3 as the primary target family. Concrete module/board, flash/PSRAM/partition profile and exact released dependency pair remain a required Stage 2 gate.
+- Contract dependency direction is `eWeLink Transport → eWeLink Protocol / Registry → Unified Device Model → Matter Adapter / Bridge → Matter over Wi-Fi`. Platform/Matter adapters depend on portable core; portable core must not expose ESP-IDF, FreeRTOS or Matter types.
+- The first consumer is limited to `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03` as four binary channels mapped to four bridged Matter On/Off endpoints. Other device families/UIIDs are not authorized without a new Stage.
+- Matter endpoint identity must bind stably to canonical device identity plus channel index, not discovery order. Exact device LAN behavior remains upstream/hardware-pending until separately evidenced.
+- `deviceKey`, Wi-Fi credentials and Matter fabric/commissioning material are secrets. They do not enter Git, fixtures, logs, README or examples. Cloud account/App ID/token provisioning is FUTURE / separate authority and is not a v1 runtime dependency.
+
+## Current scope boundary
+
+S1 is documentation/contract work only. The next authorized candidate is S2 software-first foundation; it does not authorize live LAN operations, hardware control, commissioning, production firmware or additional device families.

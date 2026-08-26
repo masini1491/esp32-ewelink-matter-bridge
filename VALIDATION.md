@@ -19,7 +19,7 @@
 
 ## S2 software-first minimum
 
-Before any hardware stage, S2 should validate protocol constants, serializer/parser boundaries, deterministic crypto vectors, fake transport/device behavior, unified-model state transitions, Matter mapping contract and host tests. A target compile-only adapter is optional only after the ESP-IDF/esp-matter release pair and concrete ESP32-S3 module gate are recorded.
+Before any hardware stage, S2 should validate protocol constants, serializer/parser boundaries, deterministic crypto vectors, fake transport/device behavior, unified-model state transitions, Matter mapping contract and host tests. S2C adds a C3 constrained target compile gate after the ESP-IDF/esp-matter release pair and reproducible C3 module/flash authority are recorded.
 
 No validation level may be promoted across the table by inference.
 

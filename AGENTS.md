@@ -42,7 +42,7 @@ Evidence levels and current Pending authority are defined in `VALIDATION.md`; up
 
 ## Current scope boundary
 
-S2A froze the released build authority in `docs/build.md`: ESP-IDF `v5.5.5`, esp-matter component `1.6.0`, and ESP32-S3-WROOM-1-N16R8 (16 MB flash / 8 MB Octal PSRAM) build profile. The module profile is not a purchased/validated board or product pinout.
+`docs/build.md` freezes ESP-IDF `v5.5.5` and esp-matter component `1.6.0`. The primary constrained build direction is ESP32-C3 / ESP32-C3-MINI-1-N4X (4 MB flash, no PSRAM); ESP32-S3-WROOM-1-N16R8 (16 MB flash / 8 MB Octal PSRAM) is development/high-margin fallback authority, not a failure. ESP32-C6 remains an optional future Thread-capability target. No profile is a purchased/validated board or product pinout.
 
 S2B portable core is governed by `docs/portable-core.md`. It remains independent of ESP-IDF/Matter and has Host PASS only; no live LAN/device/Matter runtime evidence exists.
 

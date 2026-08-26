@@ -43,4 +43,4 @@ Synthetic vector values are deliberately non-secret. The fixed IV exists only in
 
 The normal runner is CMake/CTest with `BRIDGE_BUILD_HOST_TESTS=ON` on a host that has a C++ generator and the Windows CNG provider. S2B local evidence used the MSVC x64 developer environment to compile the exact sources declared in `CMakeLists.txt`, then ran `build/host-direct/bridge_host_tests.exe`.
 
-This establishes Host PASS only. ESP-IDF, esp-matter, target compile, network, hardware and Matter interoperability remain untested.
+This establishes Host PASS only. S2C may compile the core as an inward dependency of a target-only adapter, but must not change this portable contract or make its public API platform-dependent.

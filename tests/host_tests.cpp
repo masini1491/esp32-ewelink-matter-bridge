@@ -8,7 +8,13 @@
 #include "bridge_core/device_model.hpp"
 #include "bridge_core/envelope.hpp"
 #include "bridge_core/transport.hpp"
+#if defined(_WIN32)
 #include "windows_cng_crypto_provider.hpp"
+using HostCryptoProvider = WindowsCngCryptoProvider;
+#else
+#include "openssl_crypto_provider.hpp"
+using HostCryptoProvider = OpenSslCryptoProvider;
+#endif
 
 namespace {
 
@@ -100,7 +106,7 @@ void TestEncryptedEnvelopeRoundTrip() {
 }
 
 void TestCryptoVector() {
-    WindowsCngCryptoProvider provider;
+    HostCryptoProvider provider;
     std::array<std::uint8_t, 16> key{};
     EXPECT_TRUE(provider.DeriveMd5Key("synthetic-device-key", &key) == bridge_core::Status::kOk);
     const std::array<std::uint8_t, 16> iv{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}};

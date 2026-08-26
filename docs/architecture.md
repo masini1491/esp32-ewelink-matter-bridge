@@ -8,13 +8,16 @@
 | --- | --- | --- |
 | Platform class | ESP32 Wi-Fi Matter Bridge | Local Wi-Fi bridge with BLE commissioning; no Thread requirement in v1. |
 | Framework | ESP-IDF `v5.5.5` + esp-matter component `1.6.0` | Released official pair; esp-matter exposes bridge lifecycle APIs and bridge examples, unlike the higher-level Arduino Matter wrapper. See `docs/build.md`. |
-| Primary target family | ESP32-S3 | Wi-Fi + BLE, dual-core operation and PSRAM-capable modules offer the lowest sufficient practical margin for Matter plus a LAN bridge and four endpoints. |
-| Compatibility candidates | ESP32-C6; ESP32-C3 only after budget evidence | C6 adds 802.15.4/Thread but v1 uses Wi-Fi; C3's single core and smaller SRAM make it a constrained option. Neither is a v1 target without a new resource/compile review. |
-| Module/build profile | ESP32-S3-WROOM-1-N16R8 | 16 MB Quad-SPI flash + 8 MB Octal-SPI PSRAM; carrier, product PCB and pinout remain unfrozen and hardware-pending. |
+| Primary constrained target family | ESP32-C3 | Matter over Wi-Fi, constrained by the C3's single core and 4 MB-class flash direction. S2C owns feasibility evidence; C3 has no Thread requirement in v1. |
+| Constrained module/build profile | ESP32-C3-MINI-1-N4X | Official generic module with 4 MB Quad-SPI flash and no PSRAM. It is a reproducible compile/resource baseline, not a claim about a purchased SuperMini board. |
+| Development/high-margin fallback | ESP32-S3-WROOM-1-N16R8 | 16 MB Quad-SPI flash + 8 MB Octal-SPI PSRAM, retained from S2A for debug, growth experiments and a bounded fallback comparison only if C3 is proven not viable. |
+| Optional radio-capability target | ESP32-C6 | Its material difference is IEEE 802.15.4 / future Matter-over-Thread capability, not an automatic middle tier between C3 and S3. Thread/Wi-Fi coexistence needs a separate Stage. |
 
 The selected dependency pair is released ESP-IDF `v5.5.5` plus esp-matter component `1.6.0`, not floating upstream `main`. Exact revisions, bootstrap and the S2C compile-only gate are in `docs/build.md`.
 
-Official S1 comparison evidence: ESP32-C3 provides Wi-Fi/BLE on a single core with 400 KB SRAM; ESP32-C6 adds Wi-Fi 6/BLE/802.15.4 on a single core with 512 KB HP SRAM; ESP32-S3 provides Wi-Fi/BLE, dual cores, 512 KB internal SRAM and modules with PSRAM support. These capabilities are selection evidence, not a compile or hardware pass.
+Resource profile and radio capability are independent policies. `CONSTRAINED / LIGHTWEIGHT` is C3/4 MB-class; `DEVELOPMENT / HIGH-MARGIN` is S3 N16R8; `OPTIONAL THREAD CAPABILITY` is C6. A profile may change build limits and optional capability, but never protocol correctness, crypto/secret handling, command convergence, four-channel isolation or Matter mapping correctness. More resource must not justify unbounded buffers, queues, logs, dependencies, tasks or features.
+
+Official comparison evidence: ESP32-C3 provides Wi-Fi/BLE on a single core with 400 KB SRAM; ESP32-C6 adds Wi-Fi 6/BLE/802.15.4 on a single core with 512 KB HP SRAM; ESP32-S3 provides Wi-Fi/BLE, dual cores, 512 KB internal SRAM and modules with PSRAM support. These capabilities are selection evidence, not a compile or hardware pass.
 
 ## Dependency and ownership contract
 

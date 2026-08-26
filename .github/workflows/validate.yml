@@ -1,0 +1,39 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure host tests
+        run: cmake -S . -B build/host -DBRIDGE_BUILD_HOST_TESTS=ON
+      - name: Run host tests
+        run: ctest --test-dir build/host --output-on-failure
+
+  esp32c3-compile:
+    runs-on: ubuntu-latest
+    container: espressif/idf:v5.5.5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build constrained C3 compile probe
+        run: |
+          idf.py -C platform/esp32c3_probe set-target esp32c3
+          idf.py -C platform/esp32c3_probe build
+      - name: Capture compile evidence
+        run: |
+          mkdir -p evidence
+          cp platform/esp32c3_probe/dependencies.lock evidence/
+          cp platform/esp32c3_probe/sdkconfig evidence/
+          cp platform/esp32c3_probe/build/partition_table/partition-table.csv evidence/
+          cp platform/esp32c3_probe/build/esp32c3_compile_probe.bin evidence/
+          idf.py -C platform/esp32c3_probe size > evidence/size.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: esp32c3-compile-evidence
+          path: evidence

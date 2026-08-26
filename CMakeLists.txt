@@ -24,6 +24,13 @@ if(BRIDGE_BUILD_HOST_TESTS)
         target_include_directories(bridge_host_tests PRIVATE tests)
         add_test(NAME bridge_host_tests COMMAND bridge_host_tests)
     else()
-        message(STATUS "Host crypto tests require a platform CryptoProvider; Windows CNG is the S2B test provider.")
+        find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+        add_executable(bridge_host_tests
+            tests/host_tests.cpp
+            tests/openssl_crypto_provider.cpp
+        )
+        target_link_libraries(bridge_host_tests PRIVATE bridge_core OpenSSL::Crypto)
+        target_include_directories(bridge_host_tests PRIVATE tests)
+        add_test(NAME bridge_host_tests COMMAND bridge_host_tests)
     endif()
 endif()

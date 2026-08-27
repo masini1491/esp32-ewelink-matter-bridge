@@ -36,9 +36,13 @@ No validation level may be promoted across the table by inference.
 - Toolchain note: CMake/Ninja was unavailable and the local Visual Studio CMake generator could not complete its ABI probe because no usable build program was configured. This did not prevent direct MSVC compilation of the same source list; it is a local `TOOLCHAIN` limitation, not a source failure.
 - Network / Hardware / Matter interoperability: not run. No runtime participated.
 
+Evidence lifecycle: the Windows/MSVC + CNG result above is `HISTORICAL`; the current Linux GitHub Actions host result is `CURRENT` and is recorded by run `33032450495`.
+
 ## S2C closure evidence
 
 Verified run `33032450495` passed Host CI, pinned dependency installation, C3 build, evidence capture and artifact upload. Artifact `esp32c3-compile-evidence` is 727,923 bytes with SHA-256 `08e9bfe269877611e1950f4a01e5eec5819351faf7ecd1d99998bff83ccf9ab7`.
+
+The S2C Host CI result is `CURRENT`; the compile/resource artifact remains current because M1 changes only governance text and a fail-fast metadata guard, not the target, source, dependency, partition or adapter contract.
 
 It records ESP-IDF `5.5.5`, `esp32c3`, `espressif/esp_matter` `1.6.0`, the 4 MB custom partition table at offset `0xC000`, dual OTA app roles, generated binary and resolved CSV partition evidence. Firmware is `0x136DF0` with `0x99210` (33%) free in the smallest app slot; static DRAM is 50.15% used and bootloader free space is 57%.
 

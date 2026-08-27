@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Preflight compile-probe OTA metadata
+        run: python3 scripts/verify_compile_probe_metadata.py platform/esp32c3_probe/CMakeLists.txt
       - name: Install pinned ESP-IDF
         uses: espressif/install-esp-idf-action@v1
         with:

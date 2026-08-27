@@ -34,7 +34,7 @@ Evidence levels and current Pending authority are defined in `VALIDATION.md`; up
 
 ## S1 architecture / contract authority
 
-- S1 froze ESP-IDF + esp-matter as the Matter framework direction and ESP32-S3 as the primary target family; S2A subsequently resolved the released dependency pair and reproducible module/flash/PSRAM build profile. A physical board/pinout and target compile evidence remain separate, later gates.
+- S1 originally selected ESP32-S3 as the primary target family. S2A resolved the released dependency pair and reproducible S3 module/flash/PSRAM build profile; S2C subsequently promoted ESP32-C3 / 4 MB-class to the primary constrained software/build baseline. ESP32-S3-WROOM-1-N16R8 remains development/high-margin fallback, and ESP32-C6 remains optional future Thread capability. C3 evidence is software-first compile/static-resource evidence only, not production-ready, a validated physical board, a minimum product target, Hardware PASS or runtime-resource PASS.
 - Contract dependency direction is `eWeLink Transport → eWeLink Protocol / Registry → Unified Device Model → Matter Adapter / Bridge → Matter over Wi-Fi`. Platform/Matter adapters depend on portable core; portable core must not expose ESP-IDF, FreeRTOS or Matter types.
 - The first consumer is limited to `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03` as four binary channels mapped to four bridged Matter On/Off endpoints. Other device families/UIIDs are not authorized without a new Stage.
 - Matter endpoint identity must bind stably to canonical device identity plus channel index, not discovery order. Exact device LAN behavior remains upstream/hardware-pending until separately evidenced.

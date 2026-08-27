@@ -8,11 +8,17 @@
 - Bootstrap、S1、S2A、S2B、S2C、M1 與 D1 offline evidence harness 已完成。
 - Framework authority：ESP-IDF `v5.5.5` + `espressif/esp_matter ==1.6.0`；C3 `VIABLE_CONSTRAINED` 僅限 software-first compile/static resource evidence。
 - Network、Hardware、Matter interoperability 均未驗證；CK-BL602 behavior 仍為 `UNKNOWN` / `HARDWARE_TEST_PENDING`，不得標為 `CONFIRMED_LOCAL`。
+- 第一 consumer 仍限定 `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03`；不得從其他 eWeLink/Sonoff device 推定其 UIID、wire schema、encryption applicability、channel numbering或 convergence semantics。
 - 真實 credential、deviceKey、Wi-Fi password、Matter fabric material 不得進 Git、CI、fixture、log 或文件。
 
-## D2 — Passive live mDNS observation — NOT AUTHORIZED
+## D2 — Bounded live mDNS observation — NOT AUTHORIZED
 
-- [ ] 取得明確使用者授權後，才可在 CK-BL602 所在 LAN 做一次 bounded、passive/read-only `_ewelink._tcp.local.` observation。
-- [ ] Raw capture 不得 commit；先經 D1 sanitizer/analyzer，再 review sanitized facts。
-- [ ] 不自動升級至 HTTP、`/zeroconf/*`、`getState`、deviceKey、decrypt、relay/channel control、retry loop 或 background monitor。
-- [ ] Network、Hardware、Matter interoperability 與 CK-BL602 local behavior 的 evidence classification 依實際 observation 決定；本 queue 不授權執行。
+- [ ] **Explicit user authorization required**：取得明確使用者授權後，才可在 `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03` 所在 LAN 做一次 bounded、read-only `_ewelink._tcp.local.` observation。
+- [ ] First contact 採最低充分 network activity：先 passive listen；只有在取得 service/TXT metadata 所必需時，才允許標準 mDNS browse/resolve query。不得把「read-only」誤解成可以升級到其他 protocol，亦不得宣稱整個流程完全零封包 transmit。
+- [ ] Observation 必須 one-shot / bounded，使用固定短時間窗；不得 background monitor、infinite retry、LAN sweep、port scan 或 packet injection。
+- [ ] Raw capture 不得 commit。若產生 raw observation/capture，只保留在本機工作區必要期間，先經 D1 sanitizer/analyzer，再人工 review 哪些 sanitized facts 具 durable evidence價值。
+- [ ] 不得自動升級至 HTTP、`/zeroconf/*`、`getState`、deviceKey、decrypt、relay/channel control、Matter commissioning/control、firmware flash/boot 或其他 live mutation。若 mDNS evidence不足，保存目前可觀察 evidence並 STOP；下一層 evidence另開 Stage。
+- [ ] 若 execution environment 無法存取同一 LAN、mDNS multicast或所需 read-only network capability，依 Playbook permission/environment規則 STOP並回報；不得改用 HTTP、掃描、另一台主機、proxy、cloud API或其他 workaround繞過。
+- [ ] D2 成功最多可建立與**本次實際 mDNS observation**相符的 `Network PASS`，並將直接觀察到的 CK-BL602 service/TXT/discovery facts個別提升為 `CONFIRMED_LOCAL`。未直接觀察到的 UIID、wire schema、encryption applicability、channel numbering、HTTP/getState semantics與 convergence behavior仍保持 `UNKNOWN` / `HARDWARE_TEST_PENDING`。
+- [ ] D2 不得宣告 `Hardware PASS` 或 `Matter interoperability PASS`；這兩層仍需各自明確授權且符合 `VALIDATION.md` 的真實 target/scenario evidence。
+- [ ] 完成後依 Completion Evidence Guard檢查實際 observation、sanitized evidence、evidence classification與 TASKS state；D2本身不授權任何下一 Stage。

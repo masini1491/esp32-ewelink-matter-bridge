@@ -45,6 +45,14 @@ class CaptureAnalyzerTests(unittest.TestCase):
         self.assertEqual(analyze(capture({"encrypt": False}, name="EWELINK-case"))["status"], "PARTIAL")
         self.assertEqual(analyze(capture({}, service_type="_http._tcp.local."))["classification"], "NOT_EWELINK")
 
+    def test_local_ip_and_hostname_are_not_redacted_into_output(self):
+        input_capture = capture({"encrypt": False}, name="ewelink-test.invalid")
+        input_capture["service"]["host"] = "ewelink-test.invalid"
+        input_capture["service"]["address"] = "192.0.2.123"
+        serialized = json.dumps(analyze(input_capture), sort_keys=True)
+        self.assertNotIn("192.0.2.123", serialized)
+        self.assertNotIn("ewelink-test.invalid", serialized)
+
 
 if __name__ == "__main__":
     unittest.main()

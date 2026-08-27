@@ -35,7 +35,13 @@ jobs:
           mkdir -p evidence
           cp platform/esp32c3_probe/dependencies.lock evidence/
           cp platform/esp32c3_probe/sdkconfig evidence/
-          cp platform/esp32c3_probe/build/partition_table/partition-table.csv evidence/
+          cp platform/esp32c3_probe/partitions.csv evidence/partition-table-source.csv
+          cp platform/esp32c3_probe/build/partition_table/partition-table.bin evidence/
+          python3 "$IDF_PATH/components/partition_table/gen_esp32part.py" \
+            --offset 0xC000 \
+            --flash-size 4MB \
+            platform/esp32c3_probe/build/partition_table/partition-table.bin \
+            evidence/partition-table-resolved.csv
           cp platform/esp32c3_probe/build/esp32c3_compile_probe.bin evidence/
           idf.py -C platform/esp32c3_probe size > evidence/size.txt
       - uses: actions/upload-artifact@v4

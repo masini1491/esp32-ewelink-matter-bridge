@@ -1,0 +1,1 @@
+{"synthetic":true,"service":{"name":"eWeLink-SYNTHETIC","type":"_ewelink._tcp.local.","port":8081,"txt":{"id":"SYNTHETIC-001","encrypt":"0","data1":"{\"uiid\":","data2":"999,\"sw","data3":"itches\":[","data4":"true,false]}"}}}

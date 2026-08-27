@@ -34,4 +34,12 @@ No validation level may be promoted across the table by inference.
 - Static/Test PASS: deterministic envelope codec checks, malformed/missing/oversized/unsupported boundaries, synthetic CNG-backed MD5/AES-CBC/PKCS#7/Base64 vector, model transitions, four-channel isolation, stable binding keys, FakeTransport behavior, dependency-direction and secret/license audits.
 - Host PASS: the MSVC x64 developer environment compiled `core/src/binding.cpp`, `core/src/device_model.cpp`, `core/src/envelope.cpp`, `tests/windows_cng_crypto_provider.cpp` and `tests/host_tests.cpp`; `bridge_host_tests.exe` passed all eight test groups.
 - Toolchain note: CMake/Ninja was unavailable and the local Visual Studio CMake generator could not complete its ABI probe because no usable build program was configured. This did not prevent direct MSVC compilation of the same source list; it is a local `TOOLCHAIN` limitation, not a source failure.
-- Compile / Network / Hardware / Matter interoperability: not run. No ESP-IDF, esp-matter or network/hardware runtime participated.
+- Network / Hardware / Matter interoperability: not run. No runtime participated.
+
+## S2C closure evidence
+
+Verified run `33032450495` passed Host CI, pinned dependency installation, C3 build, evidence capture and artifact upload. Artifact `esp32c3-compile-evidence` is 727,923 bytes with SHA-256 `08e9bfe269877611e1950f4a01e5eec5819351faf7ecd1d99998bff83ccf9ab7`.
+
+It records ESP-IDF `5.5.5`, `esp32c3`, `espressif/esp_matter` `1.6.0`, the 4 MB custom partition table at offset `0xC000`, dual OTA app roles, generated binary and resolved CSV partition evidence. Firmware is `0x136DF0` with `0x99210` (33%) free in the smallest app slot; static DRAM is 50.15% used and bootloader free space is 57%.
+
+The probe compiled/linked portable-core sources and referenced `esp_matter_bridge`. Classification: `VIABLE_CONSTRAINED` (software-first compile/resource evidence only). Network, Hardware and Matter interoperability remain `NOT RUN`; CK-BL602 remains `UNKNOWN` / `HARDWARE_TEST_PENDING`.

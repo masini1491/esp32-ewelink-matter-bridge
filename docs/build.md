@@ -16,7 +16,7 @@ The Component Registry entry is a released immutable version. Future S2C project
 
 | Profile | Target / module authority | Resource/radio meaning | Status |
 | --- | --- | --- | --- |
-| Constrained / lightweight | `esp32c3` + ESP32-C3-MINI-1-N4X | 4 MB Quad-SPI flash, no PSRAM; Matter over Wi-Fi baseline. This is the reproducible module profile behind a SuperMini-class direction, not an assertion about a physical board. | S2C compile/resource gate |
+| Constrained / lightweight | `esp32c3` + ESP32-C3-MINI-1-N4X | 4 MB Quad-SPI flash, no PSRAM; Matter over Wi-Fi baseline. This is the reproducible module profile behind a SuperMini-class direction, not an assertion about a physical board. | `VIABLE_CONSTRAINED`; S2C Compile PASS |
 | Development / high-margin | `esp32s3` + ESP32-S3-WROOM-1-N16R8 | 16 MB Quad-SPI flash + 8 MB Octal-SPI PSRAM. | S2A build authority; fallback only after confirmed C3 non-viability |
 | Optional Thread capability | ESP32-C6 | Future IEEE 802.15.4 / Matter-over-Thread path. | Not compiled in S2C |
 
@@ -46,7 +46,7 @@ Each app slot is `0x1D0000` (1,900,544 bytes). The table ends at `0x3D6000`, lea
 - A custom partition table is required for the future S3 fallback build; it must set 16 MB flash explicitly and make the partition table explicit.
 - The official esp-matter 1.6.0 `examples/bridge_apps/bridge_cli/partitions.csv` is the baseline authority: it demonstrates secure-cert, NVS/NVS-key, OTA data, PHY and dual OTA application partitions with a custom table.
 - S2A deliberately does not copy or invent a project `partitions.csv`. That example is sized for its own 4 MB/bridge configuration and includes Zigbee-specific storage that is not this project's requirement.
-- S2C may create a project table only after its compile harness has a real app size/configuration. It must retain the required Matter/persistence/OTA roles, document every deviation from the official baseline, and pass ESP-IDF partition validation. No oversized or product-final layout is frozen now.
+- S2C created the project table after the compile harness established the real app-size baseline. It retains the required Matter/persistence/OTA roles, documents the deviation from the official baseline, and passed ESP-IDF partition validation. No product-final layout is frozen.
 
 ## Bootstrap contract
 
@@ -66,7 +66,15 @@ S2C must produce `Compile PASS` only if all conditions below are evidenced by th
 3. A minimal compile probe includes and references the pinned `esp_matter_bridge` API so compilation and linking prove the selected esp-matter bridge component participated. It may use only synthetic descriptors and no runtime commissioning/network activity.
 4. The configured custom partition table is parsed by ESP-IDF and build output reports its flash/static-resource baseline. This is a compile-time baseline, not runtime/heap/headroom evidence.
 
-The S2C record must include command, dependency-lock evidence, target/config evidence, relevant compile/link evidence and artifact/resource baseline. It must not claim Network, Hardware or Matter interoperability PASS.
+The S2C record below is complete. It does not claim Network, Hardware or Matter interoperability PASS.
+
+## S2C closure record
+
+Run `33032450495` produced the verified artifact `esp32c3-compile-evidence` (727,923 bytes; SHA-256 `08e9bfe269877611e1950f4a01e5eec5819351faf7ecd1d99998bff83ccf9ab7`). It contains the exact `dependencies.lock`, resolved `sdkconfig`, source and resolved partition tables, generated `partition-table.bin`, `esp32c3_compile_probe.bin`, and `size.txt`.
+
+The build resolved ESP-IDF `5.5.5`, target `esp32c3`, and `espressif/esp_matter` `1.6.0`; the 4 MB profile used `0xC000` partition-table offset and dual OTA app roles. The firmware is `0x136DF0` (1,273,328 bytes) against the smallest `0x1D0000` (1,900,544-byte) app slot, leaving `0x99210` (627,216 bytes, 33%). Static DRAM usage was 161,116/321,296 (50.15%); bootloader free space was 57%. These are compile-time resource observations, not runtime heap or hardware validation.
+
+The probe compiled and linked the portable core and referenced `esp_matter_bridge`; partition validation passed. This establishes `VIABLE_CONSTRAINED` for the C3 software-first baseline, while runtime, network, hardware and Matter interoperability remain unvalidated.
 
 ## S2A evidence links
 

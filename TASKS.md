@@ -2,13 +2,18 @@
 
 本檔只保存 active unfinished-work / executable scoped Prompt queue。完成並驗證的 Stage 應移除；永久紀錄以 Git history 與 durable project docs 為準。
 
-## D3 — Bounded standard mDNS browse/resolve — NOT AUTHORIZED
+## D3A — Windows native DNS-SD observer adapter — REVALIDATION REQUIRED / NOT AUTHORIZED
 
-- [ ] **Latest attempt evidence — capability gate STOP**：2026-08-31 在 project HEAD `53184b07a9258961e0e634b3053bcfaed3000918`、Playbook `6b898cb1610c6f7264e0e898d010b2456053829a` 下檢查；本機只有 `Resolve-DnsName`，沒有既有已知語意的 native mDNS DNS-SD browse/resolve observer，因此在 live operation前安全 STOP。D2A未啟動、live duration 0 秒、沒有 raw evidence、repo沒有 durable change、沒有 Network PASS。
-- [ ] **Objective**：D3A完成後，在新的明確使用者授權下，使用 safe observer + D2A runner，對 `_ewelink._tcp.local.` 做一次 bounded standard mDNS browse/resolve query，以確認是否有 discovery/TXT response。只限 discovery layer，不得升級其他 protocol。
-- [ ] Query 必須 one-shot / bounded；不得 LAN/ARP sweep、port scan、arbitrary DNS/UDP probe、background monitor或 retry loop。
-- [ ] Raw observer output只可留在 Git-local temporary runtime，經既有 D1 sanitizer contract處理後只有 sanitized facts可 durable保存或進 model reasoning。
-- [ ] 只有直接觀察且可靠 attribution到 `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03` 的 facts才可標 `CONFIRMED_LOCAL`；generic eWeLink response不得自動提升為 CK-specific evidence。
-- [ ] D3禁止 HTTP、`/zeroconf/*`、getState、deviceKey、decrypt、relay/channel control、BLE、Matter、firmware、另一台 host、proxy或 cloud API。
-- [ ] `Network PASS` 最多只可建立為本次實際成功的 bounded local mDNS discovery/response scope；若 query後仍 `NO SERVICE OBSERVED`，D3可完成但 Network PASS不成立，也不得推論 protocol不存在或 hardware failure。
-- [ ] 完成後依 Completion Evidence Guard更新最低必要 validation/evidence與 TASKS lifecycle；D3本身不授權 HTTP、decrypt、control或任何下一 Stage。
+- [ ] **Completion Evidence Guard finding**：commit `31aed282aba466b331d103deffee37b1b4538a3a` 已加入 Windows native DNS-SD adapter，但 current implementation 的 overall timeout budget 有 blocking defect：`observe()` 先以完整 `timeout` 呼叫 `backend.browse()`；native `browse()` 會等待該完整 timeout 後才 cancel/return，因此只要實際發現任何 service，回到 `observe()` 時計算出的 remaining resolve budget 幾乎必然 `<= 0`，隨即 `TimeoutError("resolve budget exhausted")`。這表示 future D3 live run 無法在同一 overall budget內完成 browse → resolve/TXT evidence。
+- [ ] 修正應保持 Windows native DNS-SD route；不得新增 raw mDNS parser或第三方 network dependency。需要把 browse phase與 overall observation deadline分離，例如 early-stop browse、明確 browse sub-budget或其他 bounded設計，並保證 resolve仍有正的 bounded budget。
+- [ ] 新增 regression test，必須能模擬「browse實際耗時但仍在 overall deadline內發現 service」並證明後續 resolve取得正 remaining budget；現有 immediate fake browse不足以覆蓋此 defect。
+- [ ] **TXT fail-closed review**：native resolve目前以 `min(dwPropertyCount, MAX_TXT_PROPERTIES)` 靜默截斷 properties；修正時應確認是否需要在超過 bound時 fail-closed或明確標記 truncation，避免把不完整 TXT當完整 D1 evidence。
+- [ ] D3A revalidation仍只授權 implementation/local-synthetic validation；不得自行呼叫 live `DnsServiceBrowse` / `DnsServiceResolve`。Network/Hardware/Matter均保持 NOT RUN。
+- [ ] 完成後依 Completion Evidence Guard確認 timeout/deadline、cancel lifecycle、D1-compatible output、TXT bounds/privacy、targeted tests與 scoped diff；成功後再移除 D3A並解除 D3 dependency。
+
+## D3 — Bounded standard mDNS browse/resolve — BLOCKED / DEPENDS ON D3A / NOT AUTHORIZED
+
+- [ ] D3仍不得執行 live query，直到 D3A timeout-budget defect完成修正與 revalidation。
+- [ ] D3 objective維持：在新的明確使用者授權下，使用 Windows DNS-SD observer + D2A runner，對 `_ewelink._tcp.local.` 做一次 bounded standard browse/resolve，以取得可交給 D1 sanitizer的 discovery/TXT evidence。
+- [ ] D3禁止 HTTP、`/zeroconf/*`、getState、deviceKey、decrypt、relay/channel control、BLE、Matter、firmware、LAN/ARP sweep、port scan、另一台 host、proxy或 cloud API。
+- [ ] 只有直接觀察且可靠 attribution到目標 CK的 facts才可標 `CONFIRMED_LOCAL`；`Network PASS` 最多只限實際成功的 bounded local mDNS discovery/response scope。

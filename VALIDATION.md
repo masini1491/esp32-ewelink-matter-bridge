@@ -53,3 +53,9 @@ The probe compiled/linked portable-core sources and referenced `esp_matter_bridg
 At project HEAD `850674c8a90419f798527f81dfb0542dbfd3f905`, an explicitly authorized, passive-only `_ewelink._tcp.local.` mDNS observation ran for 30 seconds through the D2A bounded-result handoff runner. The separate short-command handoff and runtime cleanup passed; no standard mDNS query, HTTP request, deviceKey, decryption or device control occurred.
 
 Result: `NO SERVICE OBSERVED`. This records only the bounded observation outcome; it does not establish that the CK-BL602 lacks LAN/mDNS support, and it does not establish `Network PASS`. No CK-specific fact reached `CONFIRMED_LOCAL`; UIID, encryption applicability, channel/wire schema, HTTP semantics and convergence remain `UNKNOWN` / `HARDWARE_TEST_PENDING`. Hardware and Matter interoperability remain `NOT RUN`.
+
+## D3A Windows DNS-SD adapter evidence
+
+Static/Test PASS: Windows `dnsapi.dll` exported `DnsServiceBrowse`, `DnsServiceBrowseCancel`, `DnsServiceResolve`, and `DnsServiceResolveCancel` on the Windows 10+ 64-bit host. Deterministic synthetic tests validated the ctypes declarations, `_ewelink._tcp.local.` fixed scope, bounded service/TXT handling, synthetic browse/resolve shaping, cancellation-budget behavior, D1-compatible capture conversion, and raw host/address omission from the machine-result schema.
+
+Host/local synthetic PASS: the adapter is compatible with the D2A direct-child model and uses no shell, socket, packet parser, background monitor, or third-party dependency. Native API calls were deliberately not invoked. Network, Hardware, and Matter interoperability remain `NOT RUN`; no CK-specific fact is `CONFIRMED_LOCAL`.

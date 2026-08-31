@@ -47,3 +47,9 @@ The S2C Host CI result is `CURRENT`; the compile/resource artifact remains curre
 It records ESP-IDF `5.5.5`, `esp32c3`, `espressif/esp_matter` `1.6.0`, the 4 MB custom partition table at offset `0xC000`, dual OTA app roles, generated binary and resolved CSV partition evidence. Firmware is `0x136DF0` with `0x99210` (33%) free in the smallest app slot; static DRAM is 50.15% used and bootloader free space is 57%.
 
 The probe compiled/linked portable-core sources and referenced `esp_matter_bridge`. Classification: `VIABLE_CONSTRAINED` (software-first compile/resource evidence only). Network, Hardware and Matter interoperability remain `NOT RUN`; CK-BL602 remains `UNKNOWN` / `HARDWARE_TEST_PENDING`.
+
+## D2 bounded mDNS observation evidence
+
+At project HEAD `850674c8a90419f798527f81dfb0542dbfd3f905`, an explicitly authorized, passive-only `_ewelink._tcp.local.` mDNS observation ran for 30 seconds through the D2A bounded-result handoff runner. The separate short-command handoff and runtime cleanup passed; no standard mDNS query, HTTP request, deviceKey, decryption or device control occurred.
+
+Result: `NO SERVICE OBSERVED`. This records only the bounded observation outcome; it does not establish that the CK-BL602 lacks LAN/mDNS support, and it does not establish `Network PASS`. No CK-specific fact reached `CONFIRMED_LOCAL`; UIID, encryption applicability, channel/wire schema, HTTP semantics and convergence remain `UNKNOWN` / `HARDWARE_TEST_PENDING`. Hardware and Matter interoperability remain `NOT RUN`.

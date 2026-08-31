@@ -56,6 +56,6 @@ Result: `NO SERVICE OBSERVED`. This records only the bounded observation outcome
 
 ## D3A Windows DNS-SD adapter evidence
 
-Static/Test PASS: Windows `dnsapi.dll` exported `DnsServiceBrowse`, `DnsServiceBrowseCancel`, `DnsServiceResolve`, and `DnsServiceResolveCancel` on the Windows 10+ 64-bit host. Deterministic synthetic tests validated the ctypes declarations, `_ewelink._tcp.local.` fixed scope, bounded service/TXT handling, synthetic browse/resolve shaping, cancellation-budget behavior, D1-compatible capture conversion, and raw host/address omission from the machine-result schema.
+Static/Test PASS: Windows `dnsapi.dll` exported `DnsServiceBrowse`, `DnsServiceBrowseCancel`, `DnsServiceResolve`, and `DnsServiceResolveCancel` on the Windows 10+ 64-bit host. Deterministic synthetic tests validate ctypes declarations, fixed `_ewelink._tcp.local.` scope, an overall deadline split between browse/cancel and a positive resolve/cancel budget, fail-closed full-budget behavior, single-resolve handling of multiple discovery names, TXT property-count fail-closed behavior, D1-compatible capture conversion, and raw host/address omission from the machine-result schema.
 
 Host/local synthetic PASS: the adapter is compatible with the D2A direct-child model and uses no shell, socket, packet parser, background monitor, or third-party dependency. Native API calls were deliberately not invoked. Network, Hardware, and Matter interoperability remain `NOT RUN`; no CK-specific fact is `CONFIRMED_LOCAL`.

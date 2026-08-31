@@ -26,6 +26,7 @@ ERROR_CANCELLED = 1223
 DNS_TYPE_PTR = 12
 DNS_FREE_RECORD_LIST = 1
 CANCEL_GRACE_SECONDS = 2
+MIN_RESOLVE_SECONDS = 1
 
 
 class DnsServiceCancel(ctypes.Structure):
@@ -110,6 +111,15 @@ def _require_timeout(timeout):
         raise ValueError("timeout must be greater than zero and within the hard limit")
 
 
+def _browse_budget(timeout):
+    """Reserve both native cancellation grace periods and a useful resolve slice."""
+    _require_timeout(timeout)
+    available = timeout - (2 * CANCEL_GRACE_SECONDS) - MIN_RESOLVE_SECONDS
+    if available <= 0:
+        raise ValueError("timeout is too short for bounded browse and resolve")
+    return min(timeout / 2, available)
+
+
 def _require_service_type(service_type):
     if service_type != SERVICE_TYPE:
         raise ValueError("only _ewelink._tcp.local. is authorized")
@@ -145,6 +155,15 @@ def d1_capture(service):
 def machine_result(services, truncated=False):
     captures = [d1_capture(service) for service in services[:MAX_SERVICES]]
     return {"schema_version": 1, "service_type": SERVICE_TYPE, "captures": captures, "truncated": bool(truncated)}
+
+
+def _service_from_native_instance(native):
+    if native.dwPropertyCount > MAX_TXT_PROPERTIES:
+        raise ValueError("TXT property count exceeds bound")
+    if native.dwPropertyCount and (not native.keys or not native.values):
+        raise ValueError("TXT property arrays are missing")
+    txt = {native.keys[index]: native.values[index] for index in range(native.dwPropertyCount)}
+    return _bounded_service(ResolvedService(native.pszInstanceName, native.wPort, txt))
 
 
 class NativeDnsSdBackend:
@@ -213,9 +232,7 @@ class NativeDnsSdBackend:
                 outcome["status"] = status
                 if status == 0 and instance:
                     native = instance.contents
-                    count = min(native.dwPropertyCount, MAX_TXT_PROPERTIES)
-                    txt = {native.keys[index]: native.values[index] for index in range(count)}
-                    outcome["service"] = ResolvedService(native.pszInstanceName, native.wPort, txt)
+                    outcome["service"] = _service_from_native_instance(native)
             finally:
                 if instance:
                     self.api.DnsServiceFreeInstance(instance)
@@ -247,20 +264,22 @@ def native_api_available():
     return True
 
 
-def observe(backend, timeout):
+def observe(backend, timeout, clock=time.monotonic):
     """Collect bounded resolved services through an injected DNS-SD backend."""
-    _require_timeout(timeout)
-    started = time.monotonic()
-    names, truncated = backend.browse(SERVICE_TYPE, timeout)
+    browse_timeout = _browse_budget(timeout)
+    deadline = clock() + timeout
+    names, truncated = backend.browse(SERVICE_TYPE, browse_timeout)
     if not isinstance(names, list):
         raise ValueError("browse backend returned malformed names")
-    services = []
-    for name in names[:MAX_SERVICES]:
-        remaining = timeout - (time.monotonic() - started)
-        if remaining <= 0:
-            raise TimeoutError("resolve budget exhausted")
-        services.append(_bounded_service(backend.resolve(name, remaining)))
-    return machine_result(services, truncated or len(names) > MAX_SERVICES)
+    if not names:
+        return machine_result([], truncated)
+    resolve_timeout = deadline - clock() - CANCEL_GRACE_SECONDS
+    if resolve_timeout <= 0:
+        raise TimeoutError("resolve budget exhausted")
+    service = _bounded_service(backend.resolve(names[0], resolve_timeout))
+    if clock() > deadline:
+        raise TimeoutError("resolve exceeded overall deadline")
+    return machine_result([service], truncated or len(names) > 1)
 
 
 def main():

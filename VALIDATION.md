@@ -59,3 +59,9 @@ Result: `NO SERVICE OBSERVED`. This records only the bounded observation outcome
 Static/Test PASS: Windows `dnsapi.dll` exported `DnsServiceBrowse`, `DnsServiceBrowseCancel`, `DnsServiceResolve`, and `DnsServiceResolveCancel` on the Windows 10+ 64-bit host. Deterministic synthetic tests validate ctypes declarations, fixed `_ewelink._tcp.local.` scope, an overall deadline split between browse/cancel and a positive resolve/cancel budget, fail-closed full-budget behavior, single-resolve handling of multiple discovery names, TXT property-count fail-closed behavior, D1-compatible capture conversion, and raw host/address omission from the machine-result schema.
 
 Host/local synthetic PASS: the adapter is compatible with the D2A direct-child model and uses no shell, socket, packet parser, background monitor, or third-party dependency. Native API calls were deliberately not invoked. Network, Hardware, and Matter interoperability remain `NOT RUN`; no CK-specific fact is `CONFIRMED_LOCAL`.
+
+## D3B Windows observer research decision
+
+Static/Test PASS: public Microsoft API/SDK research compared the existing DNS-SD API, `DnsQueryEx`, `DnsStartMulticastQuery`, `DnsQueryRaw`, and `Resolve-DnsName`. No live operation occurred. `DnsQueryEx` has a documented completion callback lifetime but its multicast-only option is LLMNR, not mDNS. `DnsStartMulticastQuery` is mDNS but runs indefinitely and its published stop contract does not establish callback quiescence. The existing DNS-SD resolve route retains the same unresolved terminal-success lifetime gap.
+
+Classification: D3A remains `BLOCKED` pending authoritative completion/lifetime semantics or a separately authorized non-LAN platform proof. Network, Hardware, and Matter interoperability remain `NOT RUN`.

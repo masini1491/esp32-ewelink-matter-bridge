@@ -308,13 +308,13 @@ def observe(backend, timeout, clock=time.monotonic):
     return machine_result([service], truncated or len(names) > 1)
 
 
-def _write_success_and_hard_exit(result, stream=None, exit_func=os._exit):
-    """Flush a successful raw machine result before bypassing interpreter teardown."""
+def _write_and_hard_exit(payload, code, stream=None, exit_func=os._exit):
+    """Flush a terminal machine result before bypassing interpreter teardown."""
     if stream is None:
         stream = sys.stdout
-    stream.write(json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n")
+    stream.write(json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n")
     stream.flush()
-    exit_func(0)
+    exit_func(code)
 
 
 def main():
@@ -324,9 +324,9 @@ def main():
     try:
         result = observe(NativeDnsSdBackend(), args.timeout)
     except (OSError, RuntimeError, TimeoutError, ValueError) as error:
-        print(json.dumps({"status": "OBSERVER_ERROR", "reason": str(error)}, sort_keys=True, separators=(",", ":")))
-        return 2
-    _write_success_and_hard_exit(result)
+        _write_and_hard_exit({"status": "OBSERVER_ERROR", "reason": str(error)}, 2)
+        raise AssertionError("hard error exit returned unexpectedly")
+    _write_and_hard_exit(result, 0)
     raise AssertionError("hard success exit returned unexpectedly")
 
 

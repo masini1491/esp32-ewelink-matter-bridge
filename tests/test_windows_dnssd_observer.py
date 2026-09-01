@@ -315,7 +315,7 @@ class WindowsDnsSdObserverTests(unittest.TestCase):
         self.assertNotIn("host", json.dumps(result))
         self.assertNotIn("address", json.dumps(result))
 
-    def test_success_hard_exit_flushes_without_clearing_resolve_registry(self):
+    def test_terminal_hard_exit_flushes_without_clearing_resolve_registry(self):
         class TrackingStream:
             def __init__(self):
                 self.output = ""
@@ -332,10 +332,18 @@ class WindowsDnsSdObserverTests(unittest.TestCase):
         marker = object()
         observer.PROCESS_LIFETIME_RESOLVES.append(marker)
         result = observer.machine_result([])
-        observer._write_success_and_hard_exit(result, stream=stream, exit_func=exit_codes.append)
+        observer._write_and_hard_exit(result, 0, stream=stream, exit_func=exit_codes.append)
         self.assertTrue(stream.flushed)
         self.assertEqual(json.loads(stream.output), result)
         self.assertEqual(exit_codes, [0])
+        self.assertEqual(observer.PROCESS_LIFETIME_RESOLVES, [marker])
+
+        error_stream = TrackingStream()
+        error_payload = {"status": "OBSERVER_ERROR", "reason": "synthetic timeout"}
+        observer._write_and_hard_exit(error_payload, 2, stream=error_stream, exit_func=exit_codes.append)
+        self.assertTrue(error_stream.flushed)
+        self.assertEqual(json.loads(error_stream.output), error_payload)
+        self.assertEqual(exit_codes, [0, 2])
         self.assertEqual(observer.PROCESS_LIFETIME_RESOLVES, [marker])
 
     def test_success_hard_exit_subprocess_and_d2a_handoff(self):
@@ -346,7 +354,7 @@ class WindowsDnsSdObserverTests(unittest.TestCase):
             "import windows_dnssd_observer as observer; "
             "atexit.register(lambda: sys.stdout.write('NORMAL_FINALIZATION\\n')); "
             "observer.PROCESS_LIFETIME_RESOLVES.append(object()); "
-            "observer._write_success_and_hard_exit(json.loads(sys.argv[2]))"
+            "observer._write_and_hard_exit(json.loads(sys.argv[2]), 0)"
         )
         tools_dir = str(Path(__file__).parents[1] / "tools")
         command = [sys.executable, "-c", program, tools_dir, json.dumps(payload)]
@@ -365,20 +373,32 @@ class WindowsDnsSdObserverTests(unittest.TestCase):
             self.assertEqual(json.loads(raw_stdout), payload)
             self.assertNotIn("NORMAL_FINALIZATION", raw_stdout)
 
-    def test_error_path_keeps_observer_error_exit_semantics(self):
+    def test_error_hard_exit_subprocess_and_d2a_handoff(self):
         program = (
-            "import sys; "
+            "import atexit,sys; "
             "sys.path.insert(0, sys.argv[1]); "
             "import windows_dnssd_observer as observer; "
+            "atexit.register(lambda: sys.stdout.write('NORMAL_FINALIZATION\\n')); "
             "sys.argv=['windows_dnssd_observer.py']; "
-            "observer.NativeDnsSdBackend=lambda: type('B', (), {'browse': lambda self, service_type, timeout: (_ for _ in ()).throw(OSError('synthetic failure'))})(); "
+            "observer.NativeDnsSdBackend=lambda: type('B', (), {'browse': lambda self, service_type, timeout: (['synthetic._ewelink._tcp.local.'], False), 'resolve': lambda self, name, timeout: (observer.PROCESS_LIFETIME_RESOLVES.append(object()), (_ for _ in ()).throw(TimeoutError('synthetic timeout')))[1]})(); "
             "raise SystemExit(observer.main())"
         )
         tools_dir = str(Path(__file__).parents[1] / "tools")
-        completed = subprocess.run([sys.executable, "-c", program, tools_dir], capture_output=True, text=True, check=False)
+        command = [sys.executable, "-c", program, tools_dir]
+        completed = subprocess.run(command, capture_output=True, text=True, check=False)
         self.assertEqual(completed.returncode, 2)
         self.assertEqual(json.loads(completed.stdout)["status"], "OBSERVER_ERROR")
+        self.assertNotIn("NORMAL_FINALIZATION", completed.stdout)
         self.assertEqual(completed.stderr, "")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            result = runner.run_child(5, Path(temporary), command)
+            self.assertEqual(result["status"], "COMPLETED")
+            self.assertEqual(result["returncode"], 2)
+            self.assertGreater(result["stdout_bytes"], 0)
+            raw_stdout = (Path(temporary) / result["run_id"] / result["raw_stdout"]).read_text(encoding="utf-8")
+            self.assertEqual(json.loads(raw_stdout)["status"], "OBSERVER_ERROR")
+            self.assertNotIn("NORMAL_FINALIZATION", raw_stdout)
 
 
 def ctypes_size(structure):

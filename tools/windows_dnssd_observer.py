@@ -11,6 +11,7 @@ import json
 import os
 import threading
 import time
+import sys
 from ctypes import wintypes
 from dataclasses import dataclass
 
@@ -307,16 +308,26 @@ def observe(backend, timeout, clock=time.monotonic):
     return machine_result([service], truncated or len(names) > 1)
 
 
+def _write_success_and_hard_exit(result, stream=None, exit_func=os._exit):
+    """Flush a successful raw machine result before bypassing interpreter teardown."""
+    if stream is None:
+        stream = sys.stdout
+    stream.write(json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n")
+    stream.flush()
+    exit_func(0)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--timeout", type=float, default=20)
     args = parser.parse_args()
     try:
-        print(json.dumps(observe(NativeDnsSdBackend(), args.timeout), sort_keys=True, separators=(",", ":")))
+        result = observe(NativeDnsSdBackend(), args.timeout)
     except (OSError, RuntimeError, TimeoutError, ValueError) as error:
         print(json.dumps({"status": "OBSERVER_ERROR", "reason": str(error)}, sort_keys=True, separators=(",", ":")))
         return 2
-    return 0
+    _write_success_and_hard_exit(result)
+    raise AssertionError("hard success exit returned unexpectedly")
 
 
 if __name__ == "__main__":

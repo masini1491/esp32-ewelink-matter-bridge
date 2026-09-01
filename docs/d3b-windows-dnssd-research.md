@@ -6,13 +6,13 @@ This is public, read-only research only. No live DNS, mDNS, LAN, device, credent
 
 The current Windows `DnsServiceBrowse` + `DnsServiceResolve` adapter cannot safely release its `ctypes` callback/request/cancel objects after the first successful resolve callback: Microsoft documents a callback for each result, but does not define terminal-success, post-success cancel, or callback-quiescence semantics. D3B found no released Windows-native alternative that both performs mDNS/DNS-SD observation and supplies the required bounded completion/lifetime contract.
 
-**Decision: no implementation route is recommended.** D3A remains blocked pending authoritative Microsoft completion/lifetime semantics or a separately authorized, non-LAN platform proof. D3 remains not authorized.
+**Decision at D3B: no alternative implementation route was recommended.** D3B ruled out routes that require a documented terminal/quiescence callback before releasing native objects. It did not rule out retaining the existing route's objects for the observer child-process lifetime. A subsequent D3A revalidation adopted that safer ownership boundary: callback, request, cancel handle, event, and first accepted result are retained until child exit; cancellation is never treated as quiescence. D3 remains separately not authorized.
 
 ## Route comparison
 
 | Route | Microsoft authority | Completion / cancel contract | D2A / D1 fit | Decision |
 | --- | --- | --- | --- | --- |
-| A. `DnsServiceBrowse` + `DnsServiceResolve` | Windows 10+ DNS-SD APIs | Browse cancellation has a documented final cancelled callback. Resolve is asynchronous and reports each result, but the published resolve/cancel pages do not define terminal success, cancel-after-success, or quiescence. | D1 shaping is possible; D2A direct-child lifetime is not safely proven. | Reject pending authority. |
+| A. `DnsServiceBrowse` + `DnsServiceResolve` | Windows 10+ DNS-SD APIs | Browse cancellation has a documented final cancelled callback. Resolve is asynchronous and reports each result, but the published resolve/cancel pages do not define terminal success, cancel-after-success, or quiescence. | D1 shaping is possible. D3A now retains resolve ctypes objects until the D2A child exits, so it does not require undocumented quiescence before release. | No alternative route; process-lifetime ownership selected separately. |
 | B1. `DnsQueryEx` + `DnsCancelQuery` | Generic DNS query API | Strongest candidate lifecycle: request result, cancel handle and context remain valid until the single completion callback; cancel does not itself wait, so the callback is the quiescence point. | Parsed DNS records could be bounded and converted without a raw packet parser. | Reject for D3: `DNS_QUERY_MULTICAST_ONLY` is officially LLMNR-only, not mDNS. |
 | B2. `DnsStartMulticastQuery` + `DnsStopMulticastQuery` | Windows mDNS request / callback API | Supports mDNS name and record type, but runs indefinitely and invokes callbacks for every response. Stop API supplies no published final-callback or lifetime/quiescence rule. | PTR/SRV/TXT could in principle shape to D1, but direct-child cleanup has the same unresolved callback-lifetime risk. | Reject pending authority. |
 | B3. `DnsQueryRaw` + `DnsCancelQueryRaw` | Generic raw-query API, marked prerelease in Microsoft docs | Cancellation callback semantics are explicit, but the API exposes raw packet material and Microsoft does not establish it as the required mDNS DNS-SD path. | Would violate this project’s no raw DNS/mDNS parser boundary. | Reject. |
@@ -29,12 +29,12 @@ The current Windows `DnsServiceBrowse` + `DnsServiceResolve` adapter cannot safe
 
 The local Windows SDK `10.0.26100.0` `WinDNS.h` exposes the same route families. Its `MDNS_QUERY_REQUEST.ulRefCount` comment is not a usable lifecycle contract because the public structure documentation marks that member reserved/do-not-use.
 
-## Unblock condition
+## Historical unblock condition
 
-Obtain one of the following before another D3A implementation Stage:
+The following was the D3B condition for an implementation that releases resolve state before process exit. It has been superseded for D3A by process-lifetime ownership, not satisfied by new terminal-success authority:
 
 1. authoritative Microsoft SDK/API text that specifies `DnsServiceResolve` terminal-success and post-cancel callback lifetime; or
 2. authoritative Microsoft stop/quiescence semantics for `DnsStartMulticastQuery`; or
 3. separate explicit authorization for a bounded platform proof that establishes one of those contracts without performing live LAN observation.
 
-Do not substitute a raw packet parser, third-party mDNS stack, fixed delay, or inferred cancellation behavior.
+Do not substitute a raw packet parser, third-party mDNS stack, fixed delay, or inferred cancellation behavior. D3 itself still requires a separate explicit live-observation authorization.

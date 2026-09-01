@@ -27,6 +27,7 @@ DNS_TYPE_PTR = 12
 DNS_FREE_RECORD_LIST = 1
 CANCEL_GRACE_SECONDS = 2
 MIN_RESOLVE_SECONDS = 1
+PROCESS_LIFETIME_RESOLVES = []
 
 
 class DnsServiceCancel(ctypes.Structure):
@@ -166,8 +167,50 @@ def _service_from_native_instance(native):
     return _bounded_service(ResolvedService(native.pszInstanceName, native.wPort, txt))
 
 
+class ResolveOperation:
+    """Own one native resolve's ctypes state until the observer process exits."""
+
+    def __init__(self, api, service_name):
+        self.api = api
+        self.service_name = service_name
+        self.first_result = None
+        self.first_result_event = threading.Event()
+        self.callback_count = 0
+        self.ignored_callback_count = 0
+        self.rejected_callback_count = 0
+        self.cancel_attempted = False
+        self.cancel_status = None
+        self.cancel = DnsServiceCancel()
+        self.callback = ResolveCallback(self._on_callback)
+        self.request = DnsServiceResolveRequest(1, 0, service_name, self.callback, None)
+
+    def _on_callback(self, status, _context, instance):
+        self.callback_count += 1
+        try:
+            if status != 0 or not instance:
+                self.ignored_callback_count += 1
+                return
+            candidate = _service_from_native_instance(instance.contents)
+            if self.first_result is None:
+                self.first_result = candidate
+                self.first_result_event.set()
+            else:
+                self.ignored_callback_count += 1
+        except (TypeError, ValueError):
+            self.rejected_callback_count += 1
+        finally:
+            if instance:
+                self.api.DnsServiceFreeInstance(instance)
+
+    def cancel_once(self):
+        if not self.cancel_attempted:
+            self.cancel_attempted = True
+            self.cancel_status = self.api.DnsServiceResolveCancel(ctypes.byref(self.cancel))
+        return self.cancel_status
+
+
 class NativeDnsSdBackend:
-    """Thin native binding; callbacks and cancel handles remain alive until completion."""
+    """Thin native binding; resolve ctypes objects remain alive until process exit."""
 
     def __init__(self):
         if os.name != "nt":
@@ -223,35 +266,17 @@ class NativeDnsSdBackend:
 
     def resolve(self, service_name, timeout):
         _require_timeout(timeout)
-        completed = threading.Event()
-        outcome = {"status": None, "service": None}
-
-        @ResolveCallback
-        def callback(status, _context, instance):
-            try:
-                outcome["status"] = status
-                if status == 0 and instance:
-                    native = instance.contents
-                    outcome["service"] = _service_from_native_instance(native)
-            finally:
-                if instance:
-                    self.api.DnsServiceFreeInstance(instance)
-                completed.set()
-
-        request = DnsServiceResolveRequest(1, 0, service_name, callback, None)
-        cancel = DnsServiceCancel()
-        status = self.api.DnsServiceResolve(ctypes.byref(request), ctypes.byref(cancel))
+        operation = ResolveOperation(self.api, service_name)
+        PROCESS_LIFETIME_RESOLVES.append(operation)
+        status = self.api.DnsServiceResolve(ctypes.byref(operation.request), ctypes.byref(operation.cancel))
         if status != DNS_REQUEST_PENDING:
             raise OSError(status, "DnsServiceResolve did not become pending")
-        if not completed.wait(timeout):
-            cancel_status = self.api.DnsServiceResolveCancel(ctypes.byref(cancel))
+        if not operation.first_result_event.wait(timeout):
+            cancel_status = operation.cancel_once()
             if cancel_status not in (0, ERROR_CANCELLED):
                 raise OSError(cancel_status, "DnsServiceResolveCancel failed")
-            if not completed.wait(CANCEL_GRACE_SECONDS):
-                raise RuntimeError("resolve callback did not arrive after cancellation")
-        if outcome["status"] != 0 or outcome["service"] is None:
-            raise RuntimeError("resolve did not return a service")
-        return _bounded_service(outcome["service"])
+            raise TimeoutError("resolve did not produce an accepted result before deadline")
+        return operation.first_result
 
 
 def native_api_available():

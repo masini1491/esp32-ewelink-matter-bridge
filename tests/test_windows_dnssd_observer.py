@@ -1,6 +1,7 @@
 import json
 import sys
 import unittest
+import weakref
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "tools"))
@@ -25,6 +26,12 @@ class FakeDnsSdBackend:
 
 
 class WindowsDnsSdObserverTests(unittest.TestCase):
+    def setUp(self):
+        observer.PROCESS_LIFETIME_RESOLVES.clear()
+
+    def tearDown(self):
+        observer.PROCESS_LIFETIME_RESOLVES.clear()
+
     def test_native_symbols_and_abi_are_available(self):
         self.assertTrue(observer.native_api_available())
         self.assertEqual(ctypes_size(observer.DnsServiceCancel), ctypes_size_pointer())
@@ -191,9 +198,106 @@ class WindowsDnsSdObserverTests(unittest.TestCase):
         self.assertEqual(names, [])
         self.assertFalse(truncated)
         self.assertTrue(api.browse_cancelled)
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(TimeoutError):
             backend.resolve("eWeLink-synthetic._ewelink._tcp.local.", 0.01)
         self.assertTrue(api.resolve_cancelled)
+
+    def test_first_result_survives_late_and_duplicate_callbacks(self):
+        class FakeNativeApi:
+            def DnsServiceResolve(self, request, _cancel):
+                self.callback = request._obj.pResolveCompletionCallback
+                self.first_name = ctypes.create_unicode_buffer("eWeLink-first._ewelink._tcp.local.")
+                first = observer.DnsServiceInstance()
+                first.pszInstanceName = ctypes.cast(self.first_name, ctypes.c_wchar_p)
+                first.wPort = 8081
+                self.callback(0, None, ctypes.pointer(first))
+                return observer.DNS_REQUEST_PENDING
+
+            def DnsServiceResolveCancel(self, _cancel):
+                return 0
+
+            def DnsServiceFreeInstance(self, _instance):
+                return None
+
+            def late_success(self, name):
+                name_buffer = ctypes.create_unicode_buffer(name)
+                late = observer.DnsServiceInstance()
+                late.pszInstanceName = ctypes.cast(name_buffer, ctypes.c_wchar_p)
+                late.wPort = 8082
+                self.callback(0, None, ctypes.pointer(late))
+
+        import ctypes
+        api = FakeNativeApi()
+        backend = observer.NativeDnsSdBackend.__new__(observer.NativeDnsSdBackend)
+        backend.api = api
+        accepted = backend.resolve("eWeLink-first._ewelink._tcp.local.", 1)
+        operation = observer.PROCESS_LIFETIME_RESOLVES[-1]
+        api.late_success("eWeLink-second._ewelink._tcp.local.")
+        api.late_success("eWeLink-third._ewelink._tcp.local.")
+        self.assertEqual(accepted.instance_name, "eWeLink-first._ewelink._tcp.local.")
+        self.assertIs(operation.first_result, accepted)
+        self.assertEqual(operation.callback_count, 3)
+        self.assertEqual(operation.ignored_callback_count, 2)
+
+    def test_timeout_cancel_keeps_operation_alive_for_late_callback(self):
+        class FakeNativeApi:
+            def DnsServiceResolve(self, request, _cancel):
+                self.callback = request._obj.pResolveCompletionCallback
+                return observer.DNS_REQUEST_PENDING
+
+            def DnsServiceResolveCancel(self, _cancel):
+                self.cancelled = True
+                return 0
+
+            def DnsServiceFreeInstance(self, _instance):
+                return None
+
+        import ctypes
+        api = FakeNativeApi()
+        api.cancelled = False
+        backend = observer.NativeDnsSdBackend.__new__(observer.NativeDnsSdBackend)
+        backend.api = api
+        with self.assertRaises(TimeoutError):
+            backend.resolve("eWeLink-timeout._ewelink._tcp.local.", 0.01)
+        operation = observer.PROCESS_LIFETIME_RESOLVES[-1]
+        self.assertTrue(api.cancelled)
+        self.assertTrue(operation.cancel_attempted)
+        name_buffer = ctypes.create_unicode_buffer("eWeLink-late._ewelink._tcp.local.")
+        late = observer.DnsServiceInstance()
+        late.pszInstanceName = ctypes.cast(name_buffer, ctypes.c_wchar_p)
+        late.wPort = 8081
+        api.callback(0, None, ctypes.pointer(late))
+        self.assertEqual(operation.first_result.instance_name, "eWeLink-late._ewelink._tcp.local.")
+
+    def test_malformed_late_callback_is_ignored_and_registry_is_strong(self):
+        class FakeNativeApi:
+            def DnsServiceResolve(self, request, _cancel):
+                self.callback = request._obj.pResolveCompletionCallback
+                return observer.DNS_REQUEST_PENDING
+
+            def DnsServiceResolveCancel(self, _cancel):
+                return 0
+
+            def DnsServiceFreeInstance(self, _instance):
+                return None
+
+        import ctypes
+        api = FakeNativeApi()
+        backend = observer.NativeDnsSdBackend.__new__(observer.NativeDnsSdBackend)
+        backend.api = api
+        with self.assertRaises(TimeoutError):
+            backend.resolve("eWeLink-timeout._ewelink._tcp.local.", 0.01)
+        operation = observer.PROCESS_LIFETIME_RESOLVES[-1]
+        ref = weakref.ref(operation)
+        malformed = observer.DnsServiceInstance()
+        malformed.dwPropertyCount = observer.MAX_TXT_PROPERTIES + 1
+        api.callback(0, None, ctypes.pointer(malformed))
+        del operation
+        self.assertIsNotNone(ref())
+        self.assertIsNotNone(ref().callback)
+        self.assertIsNotNone(ref().request)
+        self.assertIsNotNone(ref().cancel)
+        self.assertEqual(ref().rejected_callback_count, 1)
 
     def test_native_txt_property_count_over_bound_fails_closed(self):
         native = observer.DnsServiceInstance()

@@ -27,7 +27,6 @@ Authority hierarchy：user 當次明確指示 → 本 repository 最新正式 go
 - 不得自行 `reset --hard`、force push、rewrite history、merge、rebase、stash，或刪除／丟棄來源不明的修改。
 - 只執行使用者當次明確授權的 Stage；不得因 TASKS 或工具權限自行擴張 scope。
 - 不提交 secrets、credentials、device keys、Wi-Fi passwords、tokens 或 private keys。
-- 本 repository 採 persistent `TASKS.md` mode；完成項目從 queue 移除，queue 清空後保留最小 `Queue status: EMPTY` state，不建立 Completed 區段。
 
 ## Evidence and hardware boundary
 

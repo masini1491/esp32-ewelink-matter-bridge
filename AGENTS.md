@@ -15,6 +15,8 @@
 - architecture、research、external authority：`RESEARCH_ARCHITECTURE.md`
 - ESP32、embedded、hardware：`EMBEDDED_PROJECTS.md`
 - Codex model、context、prompt discipline：`CODEX_PROMPT_RULES.md`
+- UI/UX、human-facing interaction：`UI_UX.md`
+- toolchain、runtime executable contract：`TOOLCHAIN.md`
 
 Authority hierarchy：user 當次明確指示 → 本 repository 最新正式 governance／technical source of truth → common playbook → `TASKS.md` → 舊 prompt、cached copy 或 memory。
 
@@ -25,6 +27,7 @@ Authority hierarchy：user 當次明確指示 → 本 repository 最新正式 go
 - 不得自行 `reset --hard`、force push、rewrite history、merge、rebase、stash，或刪除／丟棄來源不明的修改。
 - 只執行使用者當次明確授權的 Stage；不得因 TASKS 或工具權限自行擴張 scope。
 - 不提交 secrets、credentials、device keys、Wi-Fi passwords、tokens 或 private keys。
+- 本 repository 採 persistent `TASKS.md` mode；完成項目從 queue 移除，queue 清空後保留最小 `Queue status: EMPTY` state，不建立 Completed 區段。
 
 ## Evidence and hardware boundary
 
@@ -44,6 +47,6 @@ Evidence levels and current Pending authority are defined in `VALIDATION.md`; up
 
 `docs/build.md` freezes ESP-IDF `v5.5.5` and esp-matter component `1.6.0`. The primary constrained build direction is ESP32-C3 / ESP32-C3-MINI-1-N4X (4 MB flash, no PSRAM); ESP32-S3-WROOM-1-N16R8 (16 MB flash / 8 MB Octal PSRAM) is development/high-margin fallback authority, not a failure. ESP32-C6 remains an optional future Thread-capability target. No profile is a purchased/validated board or product pinout.
 
-S2B portable core is governed by `docs/portable-core.md`; S2C added verified Host CI and a C3 compile/resource gate classified `VIABLE_CONSTRAINED`. The core remains independent of ESP-IDF/Matter, and no live LAN/device/Matter runtime evidence exists.
+S2B portable core is governed by `docs/portable-core.md`; S2C added verified Host CI and a C3 compile/resource gate classified `VIABLE_CONSTRAINED`. The core remains independent of ESP-IDF/Matter. D2/D3 completed bounded mDNS observations without a service response; they do not establish `Network PASS` or CK-specific `CONFIRMED_LOCAL`. Current network/runtime evidence is summarized in `VALIDATION.md`.
 
-The next candidate is a separately authorized real eWeLink LAN diagnostic/evidence gate. Live LAN operations, hardware control, commissioning, production firmware and additional device families remain out of scope until that gate is explicitly launched.
+Live LAN operations, hardware control, commissioning, production firmware and additional device families remain out of scope until separately and explicitly authorized.

@@ -14,7 +14,8 @@
 - validation、debug、root cause：`DEBUG_VALIDATION.md`
 - architecture、research、external authority：`RESEARCH_ARCHITECTURE.md`
 - ESP32、embedded、hardware：`EMBEDDED_PROJECTS.md`
-- Codex model、context、prompt discipline：`CODEX_PROMPT_RULES.md`
+- ChatGPT planning／TASKS admission／Codex Prompt delivery／result reconciliation：`CHATGPT_WORKFLOW.md`
+- Codex model／Reasoning／Context／Agent／execution／cost/reporting：`CODEX_EXECUTION.md`
 - UI/UX、human-facing interaction：`UI_UX.md`
 - toolchain、runtime executable contract：`TOOLCHAIN.md`
 

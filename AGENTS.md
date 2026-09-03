@@ -16,6 +16,7 @@
 - ESP32、embedded、hardware：`EMBEDDED_PROJECTS.md`
 - ChatGPT planning／TASKS admission／Codex Prompt delivery／result reconciliation：`CHATGPT_WORKFLOW.md`
 - Codex model／Reasoning／Context／Agent／execution／cost/reporting：`CODEX_EXECUTION.md`
+- AI Context、Always-on／Hot／Cold／Evidence／Historical、routing／retrieval cost：`AI_CONTEXT.md`
 - UI/UX、human-facing interaction：`UI_UX.md`
 - toolchain、runtime executable contract：`TOOLCHAIN.md`
 
@@ -35,18 +36,17 @@ Authority hierarchy：user 當次明確指示 → 本 repository 最新正式 go
 
 Evidence levels and current Pending authority are defined in `VALIDATION.md`; upstream provenance routing is `docs/references/README.md`; project contracts are `docs/architecture.md`.
 
-## S1 architecture / contract authority
+## Project-specific stable boundaries
 
-- S1 originally selected ESP32-S3 as the primary target family. S2A resolved the released dependency pair and reproducible S3 module/flash/PSRAM build profile; S2C subsequently promoted ESP32-C3 / 4 MB-class to the primary constrained software/build baseline. ESP32-S3-WROOM-1-N16R8 remains development/high-margin fallback, and ESP32-C6 remains optional future Thread capability. C3 evidence is software-first compile/static-resource evidence only, not production-ready, a validated physical board, a minimum product target, Hardware PASS or runtime-resource PASS.
+- The first consumer is limited to `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03` as four binary channels mapped to four bridged Matter On/Off endpoints. Other device families/UIIDs require a new Stage and explicit authorization.
 - Contract dependency direction is `eWeLink Transport → eWeLink Protocol / Registry → Unified Device Model → Matter Adapter / Bridge → Matter over Wi-Fi`. Platform/Matter adapters depend on portable core; portable core must not expose ESP-IDF, FreeRTOS or Matter types.
-- The first consumer is limited to `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03` as four binary channels mapped to four bridged Matter On/Off endpoints. Other device families/UIIDs are not authorized without a new Stage.
-- Matter endpoint identity must bind stably to canonical device identity plus channel index, not discovery order. Exact device LAN behavior remains upstream/hardware-pending until separately evidenced.
-- `deviceKey`, Wi-Fi credentials and Matter fabric/commissioning material are secrets. They do not enter Git, fixtures, logs, README or examples. Cloud account/App ID/token provisioning is FUTURE / separate authority and is not a v1 runtime dependency.
+- Matter endpoint identity must bind stably to canonical device identity plus channel index, never discovery order. Exact device LAN behavior remains upstream/hardware-pending until separately evidenced.
+- `deviceKey`, Wi-Fi credentials and Matter fabric/commissioning material are secrets; they do not enter Git, fixtures, logs, README or examples. Cloud account/App ID/token provisioning is FUTURE / separate authority and is not a v1 runtime dependency.
+- Live LAN operations, hardware control, commissioning, production firmware and additional device families remain out of scope until separately and explicitly authorized. Static or compile evidence must not be promoted to network, runtime, hardware or Matter interoperability PASS.
 
-## Current scope boundary
+## Canonical project authority routing
 
-`docs/build.md` freezes ESP-IDF `v5.5.5` and esp-matter component `1.6.0`. The primary constrained build direction is ESP32-C3 / ESP32-C3-MINI-1-N4X (4 MB flash, no PSRAM); ESP32-S3-WROOM-1-N16R8 (16 MB flash / 8 MB Octal PSRAM) is development/high-margin fallback authority, not a failure. ESP32-C6 remains an optional future Thread-capability target. No profile is a purchased/validated board or product pinout.
-
-S2B portable core is governed by `docs/portable-core.md`; S2C added verified Host CI and a C3 compile/resource gate classified `VIABLE_CONSTRAINED`. The core remains independent of ESP-IDF/Matter. D2/D3 completed bounded mDNS observations without a service response; they do not establish `Network PASS` or CK-specific `CONFIRMED_LOCAL`. Current network/runtime evidence is summarized in `VALIDATION.md`.
-
-Live LAN operations, hardware control, commissioning, production firmware and additional device families remain out of scope until separately and explicitly authorized.
+- Current build, dependency, target and resource profile: `docs/build.md`.
+- Architecture and portable-core contracts: `docs/architecture.md` and `docs/portable-core.md`.
+- Current validation and D2/D3 observation evidence: `VALIDATION.md`.
+- Upstream provenance and reference boundaries: `docs/references/README.md` and its linked source dossiers.

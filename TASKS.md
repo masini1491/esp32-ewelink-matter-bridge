@@ -4,7 +4,7 @@
 
 ### GOV-1 — Playbook adoption + coordination/evidence surface migration
 
-Status: `AWAITING_CHATGPT_RECONCILIATION`
+Status: `READY`
 
 Goal: normalize this repository to the current AI Development Playbook adoption contract, persist `Project AI mode: ChatGPT+Codex`, and enable the selected coordination/evidence surfaces needed for upcoming work.
 
@@ -14,6 +14,7 @@ Current canonical pointers:
 - Project pre-stage HEAD: `78a2c405cfbd2bbea54a61b3194c6f3415586800`
 - Playbook baseline: `main`
 - Playbook HEAD observed at admission: `50c16aa7cf3c497ed7e0099a006f49acbd07956d`
+- Playbook HEAD observed at reconciliation: `a5da45f7cc5229c1ee4b29f5105bce6370e54485`
 - Project technical/validation authority remains in `docs/architecture.md`, `docs/portable-core.md`, `docs/build.md`, `VALIDATION.md`, and `docs/references/README.md`.
 
 Execution profile:
@@ -80,3 +81,21 @@ Validation / completion:
 - no template placeholders remain in `AGENTS.md`;
 - `git diff --check` PASS;
 - commit and push; confirm remote sync/HEAD according to project governance; then STOP for ChatGPT reconciliation.
+
+
+## Reconciliation delta — 2026-09-20
+
+Remote read-back at project HEAD `6b294ebcc7edab174c15170e8e62c43919b0ddf4` confirmed the intended files and Cold/Evidence content, but GOV-1 is not yet complete. Fix only these closure gaps within the same Stage identity:
+
+1. `AGENTS.md` still mirrors the common Playbook filenames in one consolidated bullet. Remove that filename list; keep only the thin `Playbook baseline → CHAT_INIT.md → task-based minimum canonical routing` bootstrap plus project-owned pointers.
+2. Add a clear `## Authority boundary` (or semantically equivalent explicit boundary) stating that Playbook adoption, Project AI mode selection, and coordination/evidence surface enablement do not grant or expand Current Write Target, Task/Stage, repository write, execution, permission/credential, hardware, validation, release/deployment, external-service, secret, or data-egress authority.
+3. Make the coordination write boundary explicit that paths outside `/TASKS.md`, `/BACKLOG.md`, and `/evidence/inbox/*.md` remain ChatGPT read-only unless higher project authority explicitly grants otherwise.
+
+The Playbook advanced from the admission SHA to `a5da45f7cc5229c1ee4b29f5105bce6370e54485`. The intervening changes add untrusted-content instruction/data authority separation, BEH-022 routing, and a cloud deterministic-validation example; they do not change GOV-1's selected mode or coordination-surface semantics.
+
+For this reconciliation-fix pass:
+- implementation mutation: `AGENTS.md` only;
+- `TASKS.md` may change only GOV-1 status/bookkeeping and this reconciliation delta;
+- leave `BACKLOG.md` and `evidence/inbox/README.md` unchanged;
+- after successful commit/push, set GOV-1 back to `AWAITING_CHATGPT_RECONCILIATION`;
+- run `git diff --check` and STOP for ChatGPT reconciliation.

@@ -2,7 +2,7 @@
 
 本檔是 Cold Registry，不具 execution authority。Candidate persistence 不代表 commitment；Cold → Hot 必須依 current authority 經 ChatGPT planning/reconciliation。
 
-- `B1 COMMITTED` — Device-specific LAN contract evidence。Trigger：materially new upstream evidence 或 separately authorized live/device evidence。Pointers：`docs/roadmap.md`、`VALIDATION.md`。
+- `B1 COMMITTED` — Device-specific LAN contract evidence。Upstream revisit completed 2026-09-20 and staged at `evidence/inbox/B1-upstream-revisit-2026-09-20.md`; material upstream trigger is satisfied. Current next discriminator：sanitized actual-device/app evidence for exact variant/UIID/firmware/LAN Control/channel count before implementation or live protocol assumptions are promoted. Pointers：`docs/roadmap.md`、`VALIDATION.md`。
 - `B2 COMMITTED` — Physical target / carrier / pinout closure。Trigger：hardware target selection 或 preparation for hardware work。Pointers：`docs/roadmap.md`、`docs/build.md`。
 - `B3 COMMITTED` — Network PASS evidence。Trigger：separately authorized live LAN campaign with prerequisites ready。Existing D2/D3 negative observations are not Network PASS。Pointer：`VALIDATION.md`。
 - `B4 COMMITTED` — Hardware PASS evidence。Trigger：target ESP32 + CK-BL602 physical setup available and testing explicitly authorized。Pointer：`VALIDATION.md`。

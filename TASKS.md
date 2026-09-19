@@ -4,7 +4,7 @@
 
 ### GOV-1 — Playbook adoption + coordination/evidence surface migration
 
-Status: `AWAITING_CHATGPT_RECONCILIATION`
+Status: `READY`
 
 Goal: normalize this repository to the current AI Development Playbook adoption contract, persist `Project AI mode: ChatGPT+Codex`, and enable the selected coordination/evidence surfaces needed for upcoming work.
 
@@ -99,3 +99,24 @@ For this reconciliation-fix pass:
 - leave `BACKLOG.md` and `evidence/inbox/README.md` unchanged;
 - after successful commit/push, set GOV-1 back to `AWAITING_CHATGPT_RECONCILIATION`;
 - run `git diff --check` and STOP for ChatGPT reconciliation.
+
+
+## Reconciliation delta — adoption-doctor marker closure
+
+Remote semantic read-back at project HEAD `6d3a6f15e25d9cc9121d5ff6222204e13a984868` confirms the prior three reconciliation gaps are closed. One final deterministic-adoption compatibility pass remains.
+
+Current Playbook `tools/adoption_doctor.py` at Playbook HEAD `a5da45f7cc5229c1ee4b29f5105bce6370e54485` would still emit WARN findings for the current `AGENTS.md` because:
+1. `PROJECT_AUTHORITY_MARKER` requires the `## Authority boundary` section to also contain an explicit project-specific authority marker; the current wording does not contain the detector's expected project-authority semantics.
+2. `NO_AUTHORITY_EXPANSION_MARKER` recognizes explicit wording such as `adoption does not grant` / `採用 Playbook 本身不會新增`; the current semantic equivalent `不授予或擴張` is clear to a human but is not recognized by the current deterministic doctor.
+
+Fix only `AGENTS.md` wording so the existing semantic contract remains unchanged but is machine-detectable by the current adoption doctor. Prefer the current minimal-project wording pattern:
+- under `## Authority boundary`, explicitly state that this file and this repository's formal technical/governance source of truth preserve project-specific authority;
+- explicitly state that adopting the Playbook or selecting Project AI mode does not grant additional write/execution/deployment/secret authority (or use the current canonical equivalent recognized by the doctor).
+
+Do not change mode, allowlist, coordination/evidence semantics, technical boundaries, BACKLOG, evidence staging, source/docs/tests/tooling/CI, or any other project behavior.
+
+For this final closure pass:
+- implementation mutation: `AGENTS.md` only;
+- `TASKS.md` may change only GOV-1 status/bookkeeping;
+- after successful commit/push and `git diff --check`, set GOV-1 back to `AWAITING_CHATGPT_RECONCILIATION`;
+- STOP for ChatGPT reconciliation.

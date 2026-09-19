@@ -43,7 +43,7 @@ Authority hierarchy：user 當次明確指示 → 本 repository 最新正式 go
 
 ## Authority boundary
 
-Playbook adoption、Project AI mode selection 與 coordination/evidence surface enablement 不授予或擴張 Current Write Target、Task/Stage、repository write、execution、permission/credential、hardware、validation、release/deployment、external-service、secret 或 data-egress authority。
+本檔與本 repository 的正式 technical/governance source of truth 保留 project-specific authority。Adopting the Playbook or selecting Project AI mode does not grant additional write/execution/deployment/secret authority，亦不新增或擴張 Current Write Target、Task/Stage、repository write、permission/credential、hardware、validation、external-service 或 data-egress authority。
 
 ## Evidence and hardware boundary
 

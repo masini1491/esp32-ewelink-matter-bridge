@@ -4,7 +4,7 @@
 
 ### GOV-1 — Playbook adoption + coordination/evidence surface migration
 
-Status: `READY`
+Status: `AWAITING_CHATGPT_RECONCILIATION`
 
 Goal: normalize this repository to the current AI Development Playbook adoption contract, persist `Project AI mode: ChatGPT+Codex`, and enable the selected coordination/evidence surfaces needed for upcoming work.
 

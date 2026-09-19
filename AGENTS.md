@@ -13,7 +13,7 @@
 - Playbook baseline：`main`
 - Project AI mode：`ChatGPT+Codex`
 - 新 session 入口：selected Playbook baseline → `CHAT_INIT.md` → task-based minimum canonical routing。
-- 依 task 需要讀取 `REPOSITORY_EXECUTION.md`、`CHATGPT_WORKFLOW.md`、`CODEX_EXECUTION.md`、`AI_CONTEXT.md`、`DEBUG_VALIDATION.md`、`RESEARCH_ARCHITECTURE.md`、`EMBEDDED_PROJECTS.md`、`UI_UX.md` 或 `TOOLCHAIN.md`；不在此重複保存 Playbook file list。
+- 依 task-based minimum canonical routing 選取 Playbook owner；不在此重複保存 Playbook file list。
 
 Authority hierarchy：user 當次明確指示 → 本 repository 最新正式 governance／technical source of truth → common playbook → `TASKS.md` → 舊 prompt、cached copy 或 memory。
 
@@ -35,10 +35,15 @@ Authority hierarchy：user 當次明確指示 → 本 repository 最新正式 go
 ## Coordination and evidence write boundary
 
 - ChatGPT Coordination Write Allowlist：`/TASKS.md`、`/BACKLOG.md`、`/evidence/inbox/*.md`。
+- Allowlist 以外的 path 對 ChatGPT 保持 read-only，除非更高層 project authority 明確授權。
 - `TASKS.md` 是 Hot coordination only；存在本身不授權執行。
 - `BACKLOG.md` 是 Cold Registry；不屬於 ordinary bootstrap/default Context，沒有 execution authority；Candidate persistence 不代表 commitment，Cold → Hot 需依 current authority 經 ChatGPT planning/reconciliation。
 - `evidence/inbox/*.md` 是 sanitized Evidence Staging Surface；不屬於 ordinary bootstrap/default Context，沒有 execution authority，也不是 canonical validation/architecture truth；正式結論須 reconciliation 至 `VALIDATION.md` 等 canonical owner。
 - Evidence 在第一次 Git write 前必須 sanitized；不得提交 raw `deviceKey`、Wi-Fi credentials、Matter secrets、MAC/private-network identifiers、private endpoints 或 personal data。大型敏感/raw logs 留在 Git 外；Git 僅可保存安全 digest／metadata／hash／pointer。
+
+## Authority boundary
+
+Playbook adoption、Project AI mode selection 與 coordination/evidence surface enablement 不授予或擴張 Current Write Target、Task/Stage、repository write、execution、permission/credential、hardware、validation、release/deployment、external-service、secret 或 data-egress authority。
 
 ## Evidence and hardware boundary
 

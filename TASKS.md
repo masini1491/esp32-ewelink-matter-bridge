@@ -4,7 +4,7 @@
 
 ### GOV-2 — Project governance ownership slimming
 
-Status: `READY`
+Status: `AWAITING_CHATGPT_RECONCILIATION`
 
 Goal: align this repository's `AGENTS.md` with the current AI Development Playbook ownership architecture by moving duplicated shared methodology back to its upstream canonical owners while preserving all project-specific governance, authority, technical boundaries, and enabled coordination/evidence surfaces. This is a subtractive governance-only Stage and must not change product/runtime behavior or technical truth.
 

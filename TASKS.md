@@ -23,7 +23,7 @@ Actor split:
 - Do not redo upstream research unless current canonical evidence is internally inconsistent or a required exact source identity cannot be established from the staged record.
 
 Execution profile:
-- Root model: current Luna-class profile; use GPT-6 Luna if available on the execution surface.
+- Root model: `GPT-6 Luna`.
 - Root reasoning: `Medium`
 - Agent: `1`
 - Execution mode: focused cross-document technical reconciliation

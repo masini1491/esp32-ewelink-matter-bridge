@@ -4,7 +4,7 @@
 
 ### B1-R — Canonicalize CK-BL602 variant evidence
 
-Status: `READY`
+Status: `AWAITING_CHATGPT_RECONCILIATION`
 
 Goal: reconcile the already-staged 2026-09-20 B1 upstream evidence into the project's canonical technical owners so the repository no longer implies that the `CK-BL602-4SW-HS / -03` family name by itself proves a four-channel target. Preserve the product direction as a four-channel bridge target, but make exact target variant/UIID/capability confirmation a prerequisite before any live adapter or Matter endpoint binding claim.
 

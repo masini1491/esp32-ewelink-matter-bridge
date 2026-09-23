@@ -15,6 +15,6 @@ S2 does not authorize live mDNS, LAN control, real secrets, production credentia
 ## Deferred evidence gates
 
 - D2/D3 bounded mDNS evidence gates are complete as negative observations: no service response was observed. They do not establish `Network PASS`, CK-specific `CONFIRMED_LOCAL`, LAN feature absence or hardware failure.
-- Device-specific UIID, channel wire schema, encryption applicability and state behavior: upstream revisit plus explicitly authorized hardware/network evidence.
+- The 2026-09-20 upstream revisit and canonical reconciliation confirm that the CK-BL602 family has multiple channel/UIID variants (`CONFIRMED_UPSTREAM`). Actual target UIID/active-channel count, channel wire schema, encryption applicability and state behavior remain pending the sanitized actual-device/app discriminator and, where required, separately authorized hardware/network evidence.
 - Physical carrier/product board and pinout: still required before hardware work. C3 constrained compile/resource evidence is S2C's primary gate; S3 N16R8 is retained only as development/fallback authority.
 - Network, hardware and Matter-controller interoperability: not run. Any further live/network evidence requires separate explicit authorization.

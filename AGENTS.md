@@ -44,7 +44,7 @@ Evidence levels and current Pending authority are defined in `VALIDATION.md`; up
 
 ## Project-specific stable boundaries
 
-- The first consumer is limited to `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03` as four binary channels mapped to four bridged Matter On/Off endpoints. Other device families/UIIDs require a new Stage and explicit authorization.
+- The first consumer is the intended four-channel variant within the `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03` family, mapped to four logical channels and four bridged Matter On/Off endpoints. The family name alone does not establish a unit's exact UIID or active-channel count; other device families/UIIDs require a new Stage and explicit authorization.
 - Contract dependency direction is `eWeLink Transport → eWeLink Protocol / Registry → Unified Device Model → Matter Adapter / Bridge → Matter over Wi-Fi`. Platform/Matter adapters depend on portable core; portable core must not expose ESP-IDF, FreeRTOS or Matter types.
 - Matter endpoint identity must bind stably to canonical device identity plus channel index, never discovery order. Exact device LAN behavior remains upstream/hardware-pending until separately evidenced.
 - `deviceKey`, Wi-Fi credentials and Matter fabric/commissioning material are secrets; they do not enter Git, fixtures, logs, README or examples. Cloud account/App ID/token provisioning is FUTURE / separate authority and is not a v1 runtime dependency.

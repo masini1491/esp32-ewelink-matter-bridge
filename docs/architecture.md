@@ -47,20 +47,20 @@ S2B implements this portable boundary in `core/`; its exact codec, crypto-provid
 
 ## First consumer capability contract
 
-Scope is only `CK-BL602-4SW-HS` and `CK-BL602-4SW-HS-03` as a 4-channel binary switch. Other device families and UIIDs are out of scope.
+The project target contract is a four-channel binary switch variant within the `CK-BL602-4SW-HS` / `CK-BL602-4SW-HS-03` family. Upstream evidence confirms that this family appears in multiple channel/UIID variants; the family string alone does not identify an arbitrary unit as four-channel. Other device families and UIIDs are out of scope.
 
 | Contract item | Frozen rule | Evidence status |
 | --- | --- | --- |
 | Canonical identity | Stable internal identity is `source namespace + deviceId`; deviceKey is never identity or a loggable value. | INFERRED |
-| Product/UIID | Model names are first-consumer candidates. Exact UIID/capability response must be captured from upstream evidence or permitted hardware evidence before implementation. | UNKNOWN / HARDWARE_TEST_PENDING |
-| Channels | Four logical channels, indexed `0..3` in the portable model. Any wire-field naming/index convention needs source confirmation and an adapter mapping. | INFERRED |
+| Product/UIID | The family has multiple upstream channel/UIID variants. Exact UIID/capability evidence for the actual target unit is required before claiming it has four active channels or binding live protocol/Matter behavior to that assumption. | Family variants: CONFIRMED_UPSTREAM; actual target: UNKNOWN / HARDWARE_TEST_PENDING |
+| Channels | The project target model has four logical channels, indexed `0..3`, for the intended four-channel variant. This does not assert that every family unit has four active channels. Any wire-field naming/index convention needs source confirmation and an adapter mapping. | Project target contract: frozen; actual target capability: UNKNOWN / HARDWARE_TEST_PENDING |
 | State | Each channel is `on`, `off`, or `unknown`; device availability is separately `available` or `unavailable`. Unknown is not off. | Frozen project contract |
 | Command intent | A command records requested channel state and a correlation/sequence when the protocol provides one. Transport acceptance is not observed state. | Frozen project contract |
 | Convergence | Only a later valid device observation may set observed state. Until then the channel remains pending/last-known with explicit freshness, never claimed as confirmed. | Frozen project contract |
 | Reconnect/staleness | A transport disconnect or expired freshness makes availability `unavailable`; it does not manufacture state changes. Reconnect requires a new observation before state is fresh. | Frozen project contract |
 | Matter mapping | One bridge node with four bridged Matter On/Off endpoints, one per logical channel. Endpoint identity is stable across ordinary reconnect/restart by persisted binding to canonical device identity + channel index; it must not be derived from discovery order or transient address. | Frozen project contract; persistence behavior HARDWARE_TEST_PENDING |
 
-The exact device LAN behavior, UIID, `switches` payload shape, encryption use and endpoint controller presentation remain `CONFIRMED_UPSTREAM` only where SonoffLAN evidence applies; they are not `CONFIRMED_LOCAL`.
+The family’s multi-variant channel/UIID fact is `CONFIRMED_UPSTREAM`. The actual target unit’s UIID and active channel count, exact LAN behavior, `switches` payload shape, encryption applicability and endpoint controller presentation remain `UNKNOWN` / `HARDWARE_TEST_PENDING` unless separately evidenced; none is `CONFIRMED_LOCAL`.
 
 ## Security and secret ownership
 

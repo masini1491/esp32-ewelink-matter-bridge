@@ -31,7 +31,8 @@ Synthetic vector values are deliberately non-secret. The fixed IV exists only in
 
 ## Unified Device Model and mapping
 
-- A model has canonical `source_namespace + device_id`, separate availability, and four channels `0..3`.
+- The portable model's four channels `0..3` are the project target model for the intended four-channel variant within `CK-BL602-4SW-HS / CK-BL602-4SW-HS-03`; they are not evidence that every unit in this multi-variant family has four active channels. Actual target UIID/channel capability remains `UNKNOWN` / `HARDWARE_TEST_PENDING` until device-specific evidence is available.
+- A model has canonical `source_namespace + device_id` and separate availability.
 - `FindChannel()` returns `nullptr` for an out-of-range channel; the portable API does not use C++ exceptions, so it remains valid for ESP-IDF's exception-disabled target build.
 - Each channel has observed `on` / `off` / `unknown`, freshness, optional pending intent, transport disposition and convergence outcome.
 - Creating or accepting a command does not mutate observed state. Only a valid `on`/`off` observation changes it.

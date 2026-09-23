@@ -77,3 +77,42 @@
 - Observations：the wrapper exposes common static endpoint classes and callback/attribute-store patterns; its documentation does not present an equivalent official dynamic bridged-device lifecycle API to `esp_matter_bridge`.
 - Reuse boundary：REFERENCE ONLY in S1. No Arduino dependency is selected.
 - Limitations / do-not-assume：multi-endpoint examples do not establish dynamic bridge maturity, persistent endpoint identity or suitable resource margin for this project.
+
+## 2026-09-20 B1 variant evidence update (additive)
+
+This is a later evidence update; the S1 pinned entries and their historical observations above remain unchanged. The following exact source identities were recorded for the B1 revisit. License was not established in the staged record for these revisit revisions, so all are `REFERENCE-ONLY`; this update authorizes no source reuse.
+
+Official eWeLink product/support pages reviewed on 2026-09-20 (web pages; no immutable revision recorded): [Wi-Fi supported devices](https://ewelink.cc/ewelink-cube/supported-device/wifi/), [eWeLink Smart Home add-on](https://ewelink.cc/ewelink-cube/add-on/ewelink-smart-home/), [App v5.22.2](https://ewelink.cc/whats-new-in-ewelink-app-v5-22-2/), [eWeLink Pioneer app](https://ewelink.cc/introducing-the-ewelink-pioneer-app/), and [App v5.7 support article](https://help.ewelink.cc/hc/en-us/articles/34154618272921-What-s-New-in-eWeLink-App-V5-7). These first-party product/support pages place the family in dual-, three- and four-channel categories and list `CK-BL602-4SW-HS-03(141)` in a four-channel category. They establish upstream product-family evidence only, not the actual target unit's UIID/capability or this project's local behavior.
+
+### CoolKit-Technologies/eWeLink-API
+
+- Repository：<https://github.com/CoolKit-Technologies/eWeLink-API>
+- Revision：`6ffbfd3d8e55122921ff5e4ccf3c3916c5593c00` (`main` at revisit)
+- License：not established for this revisit; `REFERENCE-ONLY`.
+- Authority：official CoolKit API/UIID reference.
+- Relevant file：`en/UIIDProtocol.md`.
+- Observation：the eWeLink-Remote plug family is listed as UIID 138 = single-channel, 139 = dual-channel, 140 = three-channel and 141 = four-channel.
+- Limitations / do-not-assume：this establishes upstream family variants, not the UIID or active-channel count of the project's actual unit, nor local behavior.
+- Reuse：reference only; no reuse authorized by this evidence update.
+
+### iHost-Open-Source-Project/hassio-ihost-addon
+
+- Repository：<https://github.com/iHost-Open-Source-Project/hassio-ihost-addon>
+- Revision：`5a8d7dec067f9196ada5879f31f71cbf6d595bff` (`master` at revisit)
+- License：not established for this revisit; `REFERENCE-ONLY`.
+- Authority：first-party iHost/eWeLink Smart Home add-on product-support documentation; not a protocol specification.
+- Relevant file：`hassio-ihost-ewelink-smart-home/DOCS.md`.
+- Observation：the documentation lists `CK-BL602-4SW-HS(138)` under Wi-Fi devices supported through `LAN&Cloud`, and the `CK-BL602-4SW-HS` / `CK-BL602-4SW-HS-03` family under multi-channel plugs with `LAN&Cloud` and channel control.
+- Limitations / do-not-assume：this does not identify the actual target unit's variant, prove its active channel count or establish this project's local discovery/control behavior.
+- Reuse：reference only; no reuse authorized by this evidence update.
+
+### AlexxIT/SonoffLAN B1 revisit
+
+- Repository：<https://github.com/AlexxIT/SonoffLAN>
+- Revision：`5721d2f24c6800617b280c015c9b0af987a99469` (`master` at revisit)
+- License：not separately established for this revisit revision in the staged record; `REFERENCE-ONLY` for this update.
+- Authority：third-party device-table and local-behavior observations; not official protocol authority.
+- Relevant files：`DEVICES.md`, `custom_components/sonoff/core/ewelink/local.py`, `custom_components/sonoff/switch.py`; public issue [#1494](https://github.com/AlexxIT/SonoffLAN/issues/1494), exact model `CK-BL602-4SW-HS(138)`.
+- Observations：the device table lists `CK-BL602-4SW-HS-03(138)-1` and `CK-BL602-4SW-HS(138)` as UIID 138 / one channel / local type `plug`, and `CK-BL602-4SW-HS(141)` as UIID 141 / four channels without a verified local type. Issue #1494 shows a cloud/device parameter `switches` array with outlet values 0..3 for the 138 model, but no active local host/localtype observation. The generic local implementation's discovery/encryption behavior remains generic upstream evidence and does not establish CK-BL602 encryption applicability.
+- Limitations / do-not-assume：array length does not prove locally controllable channels; these records do not identify the user's unit or establish its local response, wire schema or convergence.
+- Reuse：reference only for this revisit; any implementation reuse requires a separate exact revision/file/license review.

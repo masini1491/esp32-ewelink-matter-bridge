@@ -17,6 +17,13 @@
 - Host / Compile / Network / Hardware / Matter interoperability: not run in S1.
 - Device claims are classified as `CONFIRMED_UPSTREAM`, `INFERRED`, `UNKNOWN` or `HARDWARE_TEST_PENDING`; no S1 claim is `CONFIRMED_LOCAL`.
 
+## B1 CK-BL602 variant evidence reconciliation
+
+- `CONFIRMED_UPSTREAM`: current evidence records multiple channel/UIID variants in the CK-BL602 family. CoolKit's UIID table maps 138/139/140/141 to one/two/three/four channels; the iHost add-on documents the family in multi-channel `LAN&Cloud` support; SonoffLAN records 138 one-channel variants and a 141 four-channel variant. Provenance and exact revisit revisions are recorded additively in `docs/references/sources/upstream-sources.md`; the earlier S1 pins remain historical.
+- `UNKNOWN` / `HARDWARE_TEST_PENDING`: the actual target unit's exact UIID and active channel count, encryption applicability, local discovery/control semantics, and state convergence. A four-entry `switches` array in a cloud/device parameter example does not establish four locally controllable channels.
+- The project target remains the intended four-channel variant with four logical channels/four Matter On/Off endpoint descriptors; family-level evidence does not identify the actual unit's variant or prove that it has four active channels.
+- This documentation reconciliation creates no `Network PASS`, `Hardware PASS`, or Matter interoperability PASS. No fact is promoted to `CONFIRMED_LOCAL`.
+
 ## S2 software-first minimum
 
 Before any hardware stage, S2 should validate protocol constants, serializer/parser boundaries, deterministic crypto vectors, fake transport/device behavior, unified-model state transitions, Matter mapping contract and host tests. S2C adds a C3 constrained target compile gate after the ESP-IDF/esp-matter release pair and reproducible C3 module/flash authority are recorded.

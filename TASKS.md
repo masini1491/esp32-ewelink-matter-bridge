@@ -4,7 +4,7 @@
 
 ### B1-E1 — Sanitized device-evidence intake foundation
 
-Status: `READY`
+Status: `AWAITING_CHATGPT_RECONCILIATION`
 
 Goal: add a strict local-only intake/validation tool for the minimum actual-device/app metadata needed by B1. The tool must normalize user-transcribed evidence into a bounded machine-readable record while failing closed on unknown or secret-bearing fields. It does not perform OCR, parse arbitrary app exports, connect to eWeLink, inspect the LAN, control a device, or automatically promote evidence into canonical project truth.
 

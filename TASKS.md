@@ -4,7 +4,7 @@
 
 ### C2A — Simulator-backed diagnostic Web UI foundation
 
-Status: `READY`
+Status: `AWAITING_CHATGPT_RECONCILIATION`
 
 Goal: add a self-contained host/PC diagnostic Web UI that is driven by the existing `bridge_simulator` synthetic device rather than duplicating device-model semantics in browser or Python code. This Stage is synthetic-only and exists to exercise operator flows, channel state, pending intent and convergence without B1 live-device evidence, live LAN, hardware, firmware runtime or Matter commissioning.
 

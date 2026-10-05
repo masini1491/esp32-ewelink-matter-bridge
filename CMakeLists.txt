@@ -27,6 +27,17 @@ if(BRIDGE_BUILD_HOST_TESTS)
     target_link_libraries(bridge_simulator_tests PRIVATE bridge_simulator)
     add_test(NAME bridge_simulator_tests COMMAND bridge_simulator_tests)
 
+    add_executable(bridge_simulator_adapter simulator/src/diagnostic_adapter.cpp)
+    target_link_libraries(bridge_simulator_adapter PRIVATE bridge_simulator)
+
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    add_test(
+        NAME simulator_webui_tests
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_simulator_webui.py
+                --adapter $<TARGET_FILE:bridge_simulator_adapter>
+                --web-root ${CMAKE_CURRENT_SOURCE_DIR}/webui
+    )
+
     if(WIN32)
         add_executable(bridge_host_tests
             tests/host_tests.cpp

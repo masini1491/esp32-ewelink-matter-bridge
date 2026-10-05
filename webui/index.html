@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Bridge Lab — Synthetic Simulator</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+    <script src="/assets/app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Bridge Lab home">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span>Bridge Lab</span>
+      </a>
+      <span class="simulator-badge"><span aria-hidden="true">●</span> SIMULATOR ONLY</span>
+    </header>
+
+    <main class="page-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">HOST DIAGNOSTICS <span>/</span> SYNTHETIC DEVICE</p>
+          <h1 id="page-title">Explore state, not hardware.</h1>
+          <p class="intro-copy">A local playground for command intent, observations, and convergence. Nothing here connects to a CK-BL602 or sends a device command.</p>
+        </div>
+        <div class="connection-card" aria-live="polite">
+          <span class="connection-icon" aria-hidden="true">↗</span>
+          <div>
+            <span class="field-label">Simulator availability</span>
+            <strong id="availability-value">Loading…</strong>
+            <span class="muted">Process-local synthetic state</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel lifecycle-panel" aria-labelledby="lifecycle-title">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">01 <span>/</span> LIFECYCLE</p>
+            <h2 id="lifecycle-title">Simulator controls</h2>
+          </div>
+          <span class="panel-note">Actions affect this simulator process only.</span>
+        </div>
+        <div class="lifecycle-actions">
+          <button class="button button-primary" data-action="connect" type="button">Connect simulator</button>
+          <button class="button" data-action="disconnect" type="button">Disconnect</button>
+          <button class="button" data-action="stale" type="button">Mark state stale</button>
+          <button class="button" data-action="reconnect" type="button">Reconnect simulator</button>
+        </div>
+        <div class="transport-row">
+          <label for="transport-result">Next synthetic transport result</label>
+          <select id="transport-result">
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <button class="button button-subtle" data-action="set-transport" type="button">Set next result</button>
+          <span id="action-feedback" class="feedback" role="status" aria-live="polite">Ready. No hardware is connected.</span>
+        </div>
+      </section>
+
+      <section class="channels-section" aria-labelledby="channels-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">02 <span>/</span> FOUR LOGICAL CHANNELS</p>
+            <h2 id="channels-title">State and intent</h2>
+          </div>
+          <p class="section-note">Channel labels are simulator indices 0–3, shown as CH1–CH4 for the test flow.</p>
+        </div>
+
+        <div class="channel-grid">
+          <article class="channel-card" data-channel="0" aria-labelledby="channel-title-0">
+            <header class="channel-header"><div><p class="eyebrow">CHANNEL 0</p><h3 id="channel-title-0">CH1</h3></div><span class="state-pill" data-field="observed-state">Unknown</span></header>
+            <dl class="state-list">
+              <div><dt>Observed state</dt><dd data-field="observed-detail">Unknown</dd></div>
+              <div><dt>Freshness</dt><dd data-field="freshness">No observation yet</dd></div>
+              <div><dt>Pending intent</dt><dd data-field="pending">None</dd></div>
+              <div><dt>Transport disposition</dt><dd data-field="transport">No command submitted</dd></div>
+              <div><dt>Convergence</dt><dd data-field="convergence">No outcome</dd></div>
+            </dl>
+            <div class="channel-actions"><span class="action-label">Submit synthetic intent</span><div class="button-row"><button class="button button-command" data-command="on" type="button">Request ON</button><button class="button button-command" data-command="off" type="button">Request OFF</button></div></div>
+            <div class="channel-actions observation-actions"><span class="action-label">Inject synthetic observation</span><div class="button-row"><button class="button button-observation" data-observe="on" type="button">Observe ON</button><button class="button button-observation" data-observe="off" type="button">Observe OFF</button></div></div>
+          </article>
+          <article class="channel-card" data-channel="1" aria-labelledby="channel-title-1">
+            <header class="channel-header"><div><p class="eyebrow">CHANNEL 1</p><h3 id="channel-title-1">CH2</h3></div><span class="state-pill" data-field="observed-state">Unknown</span></header>
+            <dl class="state-list">
+              <div><dt>Observed state</dt><dd data-field="observed-detail">Unknown</dd></div>
+              <div><dt>Freshness</dt><dd data-field="freshness">No observation yet</dd></div>
+              <div><dt>Pending intent</dt><dd data-field="pending">None</dd></div>
+              <div><dt>Transport disposition</dt><dd data-field="transport">No command submitted</dd></div>
+              <div><dt>Convergence</dt><dd data-field="convergence">No outcome</dd></div>
+            </dl>
+            <div class="channel-actions"><span class="action-label">Submit synthetic intent</span><div class="button-row"><button class="button button-command" data-command="on" type="button">Request ON</button><button class="button button-command" data-command="off" type="button">Request OFF</button></div></div>
+            <div class="channel-actions observation-actions"><span class="action-label">Inject synthetic observation</span><div class="button-row"><button class="button button-observation" data-observe="on" type="button">Observe ON</button><button class="button button-observation" data-observe="off" type="button">Observe OFF</button></div></div>
+          </article>
+          <article class="channel-card" data-channel="2" aria-labelledby="channel-title-2">
+            <header class="channel-header"><div><p class="eyebrow">CHANNEL 2</p><h3 id="channel-title-2">CH3</h3></div><span class="state-pill" data-field="observed-state">Unknown</span></header>
+            <dl class="state-list">
+              <div><dt>Observed state</dt><dd data-field="observed-detail">Unknown</dd></div>
+              <div><dt>Freshness</dt><dd data-field="freshness">No observation yet</dd></div>
+              <div><dt>Pending intent</dt><dd data-field="pending">None</dd></div>
+              <div><dt>Transport disposition</dt><dd data-field="transport">No command submitted</dd></div>
+              <div><dt>Convergence</dt><dd data-field="convergence">No outcome</dd></div>
+            </dl>
+            <div class="channel-actions"><span class="action-label">Submit synthetic intent</span><div class="button-row"><button class="button button-command" data-command="on" type="button">Request ON</button><button class="button button-command" data-command="off" type="button">Request OFF</button></div></div>
+            <div class="channel-actions observation-actions"><span class="action-label">Inject synthetic observation</span><div class="button-row"><button class="button button-observation" data-observe="on" type="button">Observe ON</button><button class="button button-observation" data-observe="off" type="button">Observe OFF</button></div></div>
+          </article>
+          <article class="channel-card" data-channel="3" aria-labelledby="channel-title-3">
+            <header class="channel-header"><div><p class="eyebrow">CHANNEL 3</p><h3 id="channel-title-3">CH4</h3></div><span class="state-pill" data-field="observed-state">Unknown</span></header>
+            <dl class="state-list">
+              <div><dt>Observed state</dt><dd data-field="observed-detail">Unknown</dd></div>
+              <div><dt>Freshness</dt><dd data-field="freshness">No observation yet</dd></div>
+              <div><dt>Pending intent</dt><dd data-field="pending">None</dd></div>
+              <div><dt>Transport disposition</dt><dd data-field="transport">No command submitted</dd></div>
+              <div><dt>Convergence</dt><dd data-field="convergence">No outcome</dd></div>
+            </dl>
+            <div class="channel-actions"><span class="action-label">Submit synthetic intent</span><div class="button-row"><button class="button button-command" data-command="on" type="button">Request ON</button><button class="button button-command" data-command="off" type="button">Request OFF</button></div></div>
+            <div class="channel-actions observation-actions"><span class="action-label">Inject synthetic observation</span><div class="button-row"><button class="button button-observation" data-observe="on" type="button">Observe ON</button><button class="button button-observation" data-observe="off" type="button">Observe OFF</button></div></div>
+          </article>
+        </div>
+        <p id="availability-help" class="availability-help">Connect the simulator before submitting command intents. Synthetic observations remain available for deterministic state setup.</p>
+      </section>
+
+      <section class="panel activity-panel" aria-labelledby="activity-title">
+        <div class="panel-heading">
+          <div><p class="eyebrow">03 <span>/</span> LOCAL DIAGNOSTICS</p><h2 id="activity-title">Synthetic activity</h2></div>
+          <span class="panel-note">Process-local · resets when the adapter exits · no credentials</span>
+        </div>
+        <ol id="activity-list" class="activity-list" aria-live="polite"><li class="empty-event">No synthetic actions yet.</li></ol>
+      </section>
+
+      <footer class="page-footer">
+        <span class="footer-mark" aria-hidden="true">i</span>
+        <p><strong>Simulation boundary</strong> — UI feedback describes only the host-side simulator. It is not evidence of network discovery, a physical relay, firmware, a Matter endpoint, or controller interoperability.</p>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -52,3 +52,15 @@ This establishes Host PASS only. S2C may compile the core as an inward dependenc
 `simulator/` provides `bridge_simulator`, a host-test-only layer enabled with `BRIDGE_BUILD_HOST_TESTS`. It depends inward on `bridge_core` and routes commands through the existing `CommandTransport` / `CommandOrchestrator` contract. `SyntheticDevice` records submitted intents, configures the next synthetic transport outcome, and accepts explicit observations; read-only accessors expose model availability and channel snapshots. Connect, disconnect, stale and reconnect operations delegate to the portable model.
 
 Simulator identities and observations are synthetic test inputs, not claims about a physical CK-BL602 unit, UIID, LAN payload, encryption or relay behavior. Transport acceptance does not update observed state; only an injected observation can establish convergence. The simulator has no network, hardware, Matter runtime, persistence or background execution. Its tests establish Host PASS only, never Network, Hardware or Matter interoperability PASS.
+
+## Simulator-backed diagnostic Web UI (C2A)
+
+`bridge_simulator_adapter` is a host-only process that owns one `SyntheticDevice` and accepts a bounded newline-delimited diagnostic command protocol over its standard input/output. `tools/simulator_webui.py` serves the self-contained `webui/` assets and forwards synthetic actions/state to that process; it binds IPv4 loopback (`127.0.0.1`) only. The browser presents returned state and does not implement device-model transitions or convergence.
+
+With host tests enabled, build `bridge_simulator_adapter`, then start the UI from the repository root, for example:
+
+```powershell
+python tools/simulator_webui.py --adapter build/c2a-host/Release/bridge_simulator_adapter.exe
+```
+
+Open the printed loopback URL. State is process-local and resets when the server exits. All identities, events, transport outcomes and observations are synthetic; no physical device, eWeLink LAN, firmware, Matter endpoint or controller is contacted. This host diagnostic surface is not a future live-device API contract.

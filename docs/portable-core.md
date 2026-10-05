@@ -46,3 +46,9 @@ Synthetic vector values are deliberately non-secret. The fixed IV exists only in
 The normal runner is CMake/CTest with `BRIDGE_BUILD_HOST_TESTS=ON` on a host that has a C++ generator and the Windows CNG provider. S2B local evidence used the MSVC x64 developer environment to compile the exact sources declared in `CMakeLists.txt`, then ran `build/host-direct/bridge_host_tests.exe`.
 
 This establishes Host PASS only. S2C may compile the core as an inward dependency of a target-only adapter, but must not change this portable contract or make its public API platform-dependent.
+
+## Host-only synthetic simulator (SIM-1)
+
+`simulator/` provides `bridge_simulator`, a host-test-only layer enabled with `BRIDGE_BUILD_HOST_TESTS`. It depends inward on `bridge_core` and routes commands through the existing `CommandTransport` / `CommandOrchestrator` contract. `SyntheticDevice` records submitted intents, configures the next synthetic transport outcome, and accepts explicit observations; read-only accessors expose model availability and channel snapshots. Connect, disconnect, stale and reconnect operations delegate to the portable model.
+
+Simulator identities and observations are synthetic test inputs, not claims about a physical CK-BL602 unit, UIID, LAN payload, encryption or relay behavior. Transport acceptance does not update observed state; only an injected observation can establish convergence. The simulator has no network, hardware, Matter runtime, persistence or background execution. Its tests establish Host PASS only, never Network, Hardware or Matter interoperability PASS.

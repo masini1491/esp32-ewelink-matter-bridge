@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(esp32_ewelink_matter_bridge LANGUAGES CXX)
 
-option(BRIDGE_BUILD_HOST_TESTS "Build portable-core host tests" ON)
+option(BRIDGE_BUILD_HOST_TESTS "Build portable-core and synthetic-simulator host tests" ON)
 
 add_library(bridge_core
     core/src/binding.cpp
@@ -15,6 +15,18 @@ target_include_directories(bridge_core PUBLIC core/include)
 
 if(BRIDGE_BUILD_HOST_TESTS)
     enable_testing()
+
+    add_library(bridge_simulator
+        simulator/src/synthetic_device.cpp
+    )
+    target_compile_features(bridge_simulator PUBLIC cxx_std_17)
+    target_include_directories(bridge_simulator PUBLIC simulator/include)
+    target_link_libraries(bridge_simulator PUBLIC bridge_core)
+
+    add_executable(bridge_simulator_tests tests/simulator_tests.cpp)
+    target_link_libraries(bridge_simulator_tests PRIVATE bridge_simulator)
+    add_test(NAME bridge_simulator_tests COMMAND bridge_simulator_tests)
+
     if(WIN32)
         add_executable(bridge_host_tests
             tests/host_tests.cpp

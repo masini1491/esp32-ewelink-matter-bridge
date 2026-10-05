@@ -45,6 +45,12 @@ No validation level may be promoted across the table by inference.
 
 Evidence lifecycle: the Windows/MSVC + CNG result above is `HISTORICAL`; the current Linux GitHub Actions host result is `CURRENT` and is recorded by run `33032450495`.
 
+## SIM-1 host-side synthetic simulator
+
+- Static/Test PASS: simulator dependency direction is `bridge_simulator → bridge_core`; simulator is included only when `BRIDGE_BUILD_HOST_TESTS=ON`; six deterministic scenario groups cover accepted-without-observation, matching and conflicting convergence, rejection, disconnect/stale/reconnect freshness, and isolation across channels `0..3`. No production core API or semantics changed.
+- Host PASS: Visual Studio 2026 Build Tools / MSVC `19.51.36256.0`, Windows SDK `10.0.26100.0`; configured with `cmake -S . -B build/sim1-host -G "Visual Studio 18 2026" -A x64 -DBRIDGE_BUILD_HOST_TESTS=ON`, built with `cmake --build build/sim1-host --config Release --parallel 2`, and ran `ctest --test-dir build/sim1-host -C Release --output-on-failure`. Both `bridge_simulator_tests` and existing `bridge_host_tests` passed (2/2 CTest tests).
+- This is synthetic host evidence only. No network, live LAN, hardware, firmware, Matter runtime or commissioning operation ran; Network, Hardware and Matter interoperability remain `NOT RUN`.
+
 ## S2C closure evidence
 
 Verified run `33032450495` passed Host CI, pinned dependency installation, C3 build, evidence capture and artifact upload. Artifact `esp32c3-compile-evidence` is 727,923 bytes with SHA-256 `08e9bfe269877611e1950f4a01e5eec5819351faf7ecd1d99998bff83ccf9ab7`.

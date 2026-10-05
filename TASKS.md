@@ -30,6 +30,12 @@ Execution profile:
 - Cheap-model evidence pass: `No`
 - Child Delegation Forecast: `NONE`
 
+Execution prerequisite recovery:
+- The previous launch stopped before Stage execution because the local worktree contained only untracked Python bytecode caches under `tests/__pycache__/` and `tools/__pycache__/` while local `main` was behind `origin/main` with no local-only commit.
+- Before safe-sync, Codex may remove only untracked `*.pyc` files contained under those two `__pycache__/` directories, and only after re-checking that no other dirty path is present. Any additional modified/untracked path, unfinished Git operation, local ahead/divergence, or ambiguity remains a STOP.
+- After the permitted cleanup, require a clean tree, perform the normal fetch + fast-forward-only sync, then re-read latest governance and this current Hot Stage before implementation.
+- This Stage also authorizes the minimum repository hygiene fix in `.gitignore` to ignore Python bytecode/cache output (`__pycache__/` and `*.py[cod]`, or an equivalent minimal rule) so host-side Python tooling does not recreate the same safe-sync blocker. Do not broaden `.gitignore` cleanup beyond this Python-cache purpose.
+
 Implementation contract:
 1. Add a host-only synthetic simulator layer outside `bridge_core`; preferred structure is a small `bridge_simulator` library under a dedicated simulator directory, built only for host/test use.
 2. The simulator must use the existing `bridge_core::CommandTransport`, `CommandOrchestrator`, `UnifiedDeviceModel`, and current four-channel project target contract rather than duplicating production model semantics.
@@ -54,6 +60,7 @@ Implementation contract:
 8. Document only the minimum simulator boundary and validation evidence needed to prevent synthetic results from being confused with Network/Hardware/Matter evidence.
 
 Authorized implementation mutation:
+- `.gitignore` only for the minimum Python bytecode/cache ignore rule described above;
 - new host-only simulator source/header paths under `simulator/**`;
 - new simulator-focused host test source under `tests/**`;
 - `CMakeLists.txt` only as needed to build/test the host-only simulator;
@@ -75,6 +82,7 @@ Validation / completion:
 - new deterministic simulator tests cover the minimum scenarios above;
 - normal CMake/CTest host path builds and passes on the available host environment;
 - existing C3 compile probe contract remains unchanged; do not run or modify hardware/network/Matter validation for this Stage;
+- `.gitignore` prevents repository-local Python `__pycache__` / `.pyc` output from reappearing as untracked safe-sync blockers;
 - `git diff --check` PASS;
 - changed files stay inside the authorized set;
 - commit and push; confirm remote sync / HEAD according to current governance;

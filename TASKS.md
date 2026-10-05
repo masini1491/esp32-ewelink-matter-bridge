@@ -4,7 +4,7 @@
 
 ### SIM-1 — Host-side synthetic device simulator foundation
 
-Status: `READY`
+Status: `AWAITING_CHATGPT_RECONCILIATION`
 
 Goal: add a deterministic, reusable host-only synthetic device simulator around the existing portable `bridge_core` contracts so command/state/convergence behavior can be exercised without live LAN, hardware, Matter commissioning, or assumptions about unresolved CK-BL602 wire behavior. The simulator is intended to become a safe test backend for later diagnostics such as C2, but this Stage does not implement a Web UI.
 

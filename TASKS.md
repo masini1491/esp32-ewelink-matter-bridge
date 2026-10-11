@@ -2,47 +2,40 @@
 
 ## Current Hot coordination
 
-### HC-001 — Bound simulator Web UI child IPC and shutdown
-
-Status: `AWAITING_CHATGPT_RECONCILIATION`
-Priority: `P1`
-Campaign: `HC-2026-10-11` (four confirmed repository health-check corrections; sequential checkpoints)
-Repository: `masini1491/esp32-ewelink-matter-bridge`; branch: `main`; Project AI mode: `ChatGPT+Codex`.
-Producer-observed target pre-admission `main`: `40e6db0df492289ff7b8ce099d4654ccf36dc6d5`.
-Playbook baseline: `main`; producer-observed revision: `65b6f1546cf3412aaa79ee272a752cdb4ca48f45`.
-
-Goal: eliminate indefinite waits caused by `tools/simulator_webui.py` reading a nonresponsive simulator child through blocking `readline()`, including its `close() → request("quit")` path. Preserve the existing simulator-backed, loopback-only synthetic UI and machine contract.
-
-Actor and execution:
-- ChatGPT owns planning, coordination, and independent remote reconciliation; Codex owns only this Stage's authorized implementation/validation.
-- Root model: `GPT-6 Luna`; root reasoning: `High`; one root agent; cheap-model evidence pass: `No`; child delegation forecast: `NONE`.
-- Only HC-001 is executable. HC-002/003/004 below are admitted follow-up checkpoints, **not** executable until ChatGPT separately promotes each after successful prior reconciliation. Do not continue automatically.
-
-Required behavior / acceptance:
-1. Make **every** adapter request/response wait, including ordinary `/api/state`, `/api/actions`, and graceful shutdown, explicitly time-bounded on Windows/MSVC/Python host and other supported hosts. A byte/line bound does not replace a wall-time bound.
-2. On nonresponsive, partial-output, exited, malformed or oversized child response, return an honest bounded unavailable/error outcome to callers. Ensure failed IPC cannot leave an HTTP handler waiting forever; distinguish simulator unavailable/timeout from malformed user input.
-3. Graceful shutdown may attempt `quit`, but must not block access to terminate/kill/reap fallback. Stop only the child process this server owns. Bound shutdown, clean up pipe handles/worker resources and prevent orphan child/thread/HTTP listener.
-4. Keep state-machine ownership in C++ `SyntheticDevice`; do not duplicate convergence/freshness logic in Python or JavaScript. Preserve loopback-only binding, local-only assets, synthetic-only evidence, current endpoint semantics for healthy child.
-5. Deterministic regression tests must exercise healthy normal response and close, child never writes output, child emits incomplete response but does not exit, child ignores `quit`, process unexpectedly exits, and timeout cleanup. Verify tests complete in bounded time and owned process is reaped.
-6. Run focused Python UI tests, existing relevant Python tests, host CMake/CTest suites (where locally available), `git diff --check`, and inspect modified-file scope. Mark unavailable validation honestly; no invented PASS.
-
-Authorized mutation: `tools/simulator_webui.py`, `tests/test_simulator_webui.py`, narrowly needed host-focused tests under `tests/**`, `VALIDATION.md` for HC-001 evidence, and `TASKS.md` for status only. If a new support helper is unavoidable, STOP with a narrowly scoped architecture proposal instead of silently expanding paths/dependencies.
-
-STOP / exclusions:
-- No changes to `core/**`, `simulator/**`, `webui/**`, `platform/**`, `CMakeLists.txt`, dependency versions, firmware, real LAN/device, hardware, Matter or Cloud behavior.
-- No global process kill, indefinite retry, network listener beyond IPv4 loopback, external runtime/package install, or secret exposure.
-- If fixing bounded IPC requires changing existing adapter protocol or public semantics beyond this Stage, STOP for architecture review.
-- After implementing and testing HC-001 only: commit/push, confirm remote HEAD and scope, update **only HC-001** status to `AWAITING_CHATGPT_RECONCILIATION`, report concrete evidence, then STOP. ChatGPT reviews and unlocks HC-002 separately.
-
-## Sequential follow-up checkpoints (not yet executable)
-
 ### HC-002 — D1 malformed service type fails closed
 
-Status: `QUEUED_AFTER_HC-001_RECONCILIATION`
+Status: `READY`
 Priority: `P2`
-Evidence: `tools/ewelink_capture_analyzer.py` calls `service.get(...)` before validating `service` is a dict. JSON `service: null`, array, number or string can cause `AttributeError`.
-Goal: validate container/type before dereferencing, consistently classify malformed JSON-derived service values as `MALFORMED / UNKNOWN` without exception/traceback and preserve valid D1 evidence behavior.
-Authorized implementation: `tools/ewelink_capture_analyzer.py`, `tests/test_capture_analyzer.py`, optional bounded `VALIDATION.md` evidence, `TASKS.md` status bookkeeping. Tests include null/list/number/string service, valid/invalid txt, existing capture cases and `git diff --check`. Do not modify D1 real observation authority, network/hardware behavior or other tools. Codex may act only after ChatGPT sets this Stage to `READY`; commit/push/status awaiting reconciliation, then STOP.
+Campaign: `HC-2026-10-11`
+Repository: `masini1491/esp32-ewelink-matter-bridge`; branch: `main`; Project AI mode: `ChatGPT+Codex`.
+Producer-observed target pre-promotion `main`: `87d69db24acb54f66f9d6f3c6144742757cf9ca9`.
+Playbook baseline: `main`; producer-observed revision: `65b6f1546cf3412aaa79ee272a752cdb4ca48f45`.
+Predecessor HC-001 passed ChatGPT remote reconciliation; exact-main GitHub Actions `validate` run `38113012284` concluded success. HC-001 completed history lives in Git history/`VALIDATION.md`, not active Hot.
+
+Goal: ensure malformed `service` values in offline D1 captures fail closed instead of raising `AttributeError` from `service.get()` before its type is checked. Preserve existing valid D1 analyzer behavior, classifications and evidence boundary.
+
+Current defect: `tools/ewelink_capture_analyzer.py` obtains `service = capture.get("service", {})`, then calls `service.get("txt", {})` and `service.get("name", "")` before verifying `service` is a dict. Input `service: null`, list, number or string crashes rather than returning `{"status":"MALFORMED","classification":"UNKNOWN"}`.
+
+Actor / execution:
+- ChatGPT owns planning, coordination and independent remote reconciliation. Codex owns only HC-002 authorized implementation and validation.
+- Root model `GPT-6 Luna`; root reasoning `Medium`; one root agent; cheap-model evidence pass `No`; child delegation forecast `NONE`.
+- Only HC-002 is executable. HC-003/004 remain queued until explicitly promoted by ChatGPT after HC-002 is reconciled.
+
+Implementation contract:
+1. Validate `service` as a mapping/dict **before** any `.get()` or other mapping operations. Keep `txt` / `name` type checks and existing analyzer output contract.
+2. Invalid JSON-derived `service` types (`null`, array, number, string, boolean) must return `MALFORMED / UNKNOWN` as a structured result, without unhandled exceptions or raw input echo.
+3. Do not broaden to unrelated capture semantics, introduce new identity inference, or change D1 evidence/Network PASS classifications.
+
+Authorized mutation: `tools/ewelink_capture_analyzer.py`, `tests/test_capture_analyzer.py`, optional bounded `VALIDATION.md` HC-002 evidence, and `TASKS.md` HC-002 status only. No other tracked files.
+
+Validation:
+- Add deterministic tests for malformed service types and invalid `txt` while preserving valid D1 fixtures and privacy/redaction behavior.
+- Run focused D1 tests plus relevant existing Python regression tests where feasible; `git diff --check` and changed-file scope.
+- If tests unavailable or unexpected neighboring defect requires scope expansion, STOP and report evidence without silently patching additional files.
+- No live eWeLink API/cloud, mDNS/LAN, device/hardware, firmware, Matter or commissioning operation; no inferred `CONFIRMED_LOCAL`, Network/Hardware/Matter PASS.
+- Commit/push, verify canonical remote HEAD/scope, set only HC-002 status to `AWAITING_CHATGPT_RECONCILIATION`, report, and STOP. Do not start HC-003/004.
+
+## Sequential follow-up checkpoints (not yet executable)
 
 ### HC-003 — B1 overlong JSON integer rejected safely
 

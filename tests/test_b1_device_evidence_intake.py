@@ -156,6 +156,36 @@ class B1DeviceEvidenceIntakeTests(unittest.TestCase):
         with self.assertRaises(IntakeError):
             parse_input(b'{"uiid":1,"uiid":2}')
 
+    def test_parse_input_bounds_integer_tokens_and_preserves_ordinary_numbers(self) -> None:
+        self.assertEqual(
+            parse_input(b'{"positive":141,"negative":-2,"fraction":1.25,"text":"safe"}'),
+            {"positive": 141, "negative": -2, "fraction": 1.25, "text": "safe"},
+        )
+        long_integer = b"9" * 5000
+        raw = b'{"uiid":' + long_integer + b'}'
+        self.assertLess(len(raw), MAX_INPUT_BYTES)
+        with self.assertRaisesRegex(IntakeError, "JSON integer exceeds digit limit"):
+            parse_input(raw)
+
+    def test_cli_rejects_overlong_integer_without_traceback_or_echo(self) -> None:
+        long_integer = b"9" * 5000
+        with tempfile.TemporaryDirectory() as directory:
+            input_path = Path(directory) / "input.json"
+            input_path.write_bytes(b'{"uiid":' + long_integer + b'}')
+            result = subprocess.run(
+                [sys.executable, str(TOOL), "--input", str(input_path)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+        rejection = json.loads(result.stderr)
+        self.assertEqual(rejection["status"], "REJECTED")
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertNotIn(long_integer.decode(), result.stdout + result.stderr)
+
     def test_timestamp_validation_does_not_round_or_fabricate_precision(self) -> None:
         for timestamp in ("2026-10-05", "2026-10-05T14:07", "2026-10-05T14:07:08.123456789+08:00"):
             with self.subTest(timestamp=timestamp):

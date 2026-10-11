@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 MAX_INPUT_BYTES = 16 * 1024
+MAX_JSON_INTEGER_DIGITS = 128
 MAX_FIRMWARE_CHARS = 64
 MAX_VISIBLE_CHANNEL_COUNT = 64
 MAX_TIMESTAMP_CHARS = 40
@@ -114,6 +115,13 @@ def _reject_nonstandard_constant(_value: str) -> None:
     raise IntakeError("non-standard JSON number")
 
 
+def _parse_bounded_integer(token: str) -> int:
+    digits = token[1:] if token.startswith("-") else token
+    if len(digits) > MAX_JSON_INTEGER_DIGITS:
+        raise IntakeError("JSON integer exceeds digit limit")
+    return int(token)
+
+
 def parse_input(raw: bytes) -> Any:
     if len(raw) > MAX_INPUT_BYTES:
         raise IntakeError("input exceeds size limit")
@@ -122,6 +130,7 @@ def parse_input(raw: bytes) -> Any:
         return json.loads(
             text,
             object_pairs_hook=_reject_duplicate_keys,
+            parse_int=_parse_bounded_integer,
             parse_constant=_reject_nonstandard_constant,
         )
     except (UnicodeDecodeError, json.JSONDecodeError, RecursionError):

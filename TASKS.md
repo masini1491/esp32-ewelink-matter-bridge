@@ -4,7 +4,7 @@
 
 ### HC-003 — B1 overlong JSON integer rejected safely
 
-Status: `READY`
+Status: `AWAITING_CHATGPT_RECONCILIATION`
 Priority: `P2`
 Campaign: `HC-2026-10-11`
 Repository: `masini1491/esp32-ewelink-matter-bridge`; branch: `main`; Project AI mode: `ChatGPT+Codex`.

@@ -45,6 +45,18 @@ class CaptureAnalyzerTests(unittest.TestCase):
         self.assertEqual(analyze(capture({"encrypt": False}, name="EWELINK-case"))["status"], "PARTIAL")
         self.assertEqual(analyze(capture({}, service_type="_http._tcp.local."))["classification"], "NOT_EWELINK")
 
+    def test_malformed_service_types_fail_closed(self):
+        for service in (None, [], 7, "not-an-object", True):
+            with self.subTest(service_type=type(service).__name__):
+                result = analyze({"synthetic": True, "service": service})
+                self.assertEqual(result, {"status": "MALFORMED", "classification": "UNKNOWN"})
+
+    def test_invalid_txt_types_fail_closed(self):
+        for txt in (None, [], 7, "not-an-object", True):
+            with self.subTest(txt_type=type(txt).__name__):
+                result = analyze({"synthetic": True, "service": {"txt": txt}})
+                self.assertEqual(result, {"status": "MALFORMED", "classification": "UNKNOWN"})
+
     def test_local_ip_and_hostname_are_not_redacted_into_output(self):
         input_capture = capture({"encrypt": False}, name="ewelink-test.invalid")
         input_capture["service"]["host"] = "ewelink-test.invalid"

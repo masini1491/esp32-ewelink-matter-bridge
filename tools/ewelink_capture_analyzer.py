@@ -18,9 +18,11 @@ def analyze(capture):
     if len(raw.encode()) > MAX_INPUT or not isinstance(capture, dict):
         return {"status": "MALFORMED", "classification": "UNKNOWN"}
     service = capture.get("service", {})
+    if not isinstance(service, dict):
+        return {"status": "MALFORMED", "classification": "UNKNOWN"}
     txt = service.get("txt", {})
     name = service.get("name", "")
-    if not isinstance(service, dict) or not isinstance(txt, dict) or not isinstance(name, str):
+    if not isinstance(txt, dict) or not isinstance(name, str):
         return {"status": "MALFORMED", "classification": "UNKNOWN"}
     service_type = service.get("type")
     if service_type != "_ewelink._tcp.local." or not name.lower().startswith("ewelink"):

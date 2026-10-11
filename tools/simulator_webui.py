@@ -8,6 +8,8 @@ import json
 import socket
 import subprocess
 import sys
+import threading
+import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -16,6 +18,10 @@ BIND_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
 MAX_REQUEST_BYTES = 1024
 MAX_ADAPTER_RESPONSE_BYTES = 16 * 1024
+IPC_TIMEOUT_SECONDS = 2
+TERMINATE_GRACE_SECONDS = 1
+KILL_GRACE_SECONDS = 2
+IPC_WORKER_JOIN_SECONDS = 1
 WEB_ROOT = Path(__file__).resolve().parents[1] / "webui"
 ASSETS = {
     "/": ("index.html", "text/html; charset=utf-8"),
@@ -28,10 +34,22 @@ class AdapterError(RuntimeError):
     """Raised when the simulator child fails or rejects a bounded command."""
 
 
+class SimulatorTimeoutError(AdapterError):
+    """Raised when the simulator does not complete an IPC response in time."""
+
+
+class SimulatorProtocolError(AdapterError):
+    """Raised when the simulator returns an invalid or incomplete response."""
+
+
+class SimulatorRejectedError(AdapterError):
+    """Raised when the simulator rejects a valid diagnostic command."""
+
+
 class SimulatorBridge:
-    def __init__(self, executable: Path) -> None:
+    def __init__(self, executable: Path, arguments: tuple[str, ...] = ()) -> None:
         self.process = subprocess.Popen(
-            [str(executable)],
+            [str(executable), *arguments],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
@@ -40,46 +58,97 @@ class SimulatorBridge:
             bufsize=1,
             shell=False,
         )
+        self._request_lock = threading.Lock()
 
     def request(self, command: str) -> dict:
-        if self.process.poll() is not None or self.process.stdin is None or self.process.stdout is None:
-            raise AdapterError("simulator process is unavailable")
-        try:
-            self.process.stdin.write(command + "\n")
-            self.process.stdin.flush()
-            line = self.process.stdout.readline(MAX_ADAPTER_RESPONSE_BYTES + 1)
-        except (OSError, UnicodeError) as error:
-            raise AdapterError("simulator request failed") from error
-        if not line.endswith("\n") or len(line.encode("utf-8")) > MAX_ADAPTER_RESPONSE_BYTES:
-            raise AdapterError("simulator response exceeded its size bound")
-        try:
-            response = json.loads(line)
-        except (json.JSONDecodeError, UnicodeError) as error:
-            raise AdapterError("simulator returned an invalid response") from error
-        if not isinstance(response, dict):
-            raise AdapterError("simulator returned an invalid response")
-        if "error" in response:
-            raise AdapterError(str(response["error"]))
-        return response
+        with self._request_lock:
+            if self.process.poll() is not None or self.process.stdin is None or self.process.stdout is None:
+                raise AdapterError("simulator process is unavailable")
 
-    def close(self) -> int | None:
+            completed = threading.Event()
+            outcome: list[tuple[str, object]] = []
+
+            def exchange() -> None:
+                try:
+                    self.process.stdin.write(command + "\n")
+                    self.process.stdin.flush()
+                    line = self.process.stdout.readline(MAX_ADAPTER_RESPONSE_BYTES + 1)
+                    outcome.append(("line", line))
+                except (OSError, UnicodeError, ValueError) as error:
+                    outcome.append(("error", error))
+                finally:
+                    completed.set()
+
+            worker = threading.Thread(target=exchange, name="simulator-ipc", daemon=True)
+            worker.start()
+            if not completed.wait(IPC_TIMEOUT_SECONDS):
+                self._stop_child()
+                worker.join(IPC_WORKER_JOIN_SECONDS)
+                if worker.is_alive():
+                    raise AdapterError("simulator IPC worker did not stop after child exit")
+                raise SimulatorTimeoutError("simulator response timed out")
+            worker.join(IPC_WORKER_JOIN_SECONDS)
+            if worker.is_alive():
+                self._stop_child()
+                raise AdapterError("simulator IPC worker did not stop after response")
+
+            if not outcome or outcome[0][0] == "error":
+                self._stop_child()
+                raise AdapterError("simulator request failed")
+
+            line = outcome[0][1]
+            if not isinstance(line, str) or not line.endswith("\n"):
+                self._stop_child()
+                raise SimulatorProtocolError("simulator returned an incomplete response")
+            if len(line.encode("utf-8")) > MAX_ADAPTER_RESPONSE_BYTES:
+                self._stop_child()
+                raise SimulatorProtocolError("simulator response exceeded its size bound")
+            try:
+                response = json.loads(line)
+            except (json.JSONDecodeError, UnicodeError) as error:
+                self._stop_child()
+                raise SimulatorProtocolError("simulator returned an invalid response") from error
+            if not isinstance(response, dict):
+                self._stop_child()
+                raise SimulatorProtocolError("simulator returned an invalid response")
+            if "error" in response:
+                raise SimulatorRejectedError(str(response["error"]))
+            return response
+
+    def _stop_child(self) -> int | None:
         if self.process.poll() is None:
             try:
-                self.request("quit")
-                return_code = self.process.wait(timeout=2)
-            except (AdapterError, OSError, subprocess.TimeoutExpired):
                 self.process.terminate()
+            except OSError:
+                pass
+            try:
+                return_code = self.process.wait(timeout=TERMINATE_GRACE_SECONDS)
+            except subprocess.TimeoutExpired:
                 try:
-                    return_code = self.process.wait(timeout=2)
-                except subprocess.TimeoutExpired:
                     self.process.kill()
-                    return_code = self.process.wait(timeout=2)
+                except OSError:
+                    pass
+                try:
+                    return_code = self.process.wait(timeout=KILL_GRACE_SECONDS)
+                except subprocess.TimeoutExpired as error:
+                    raise AdapterError("simulator child could not be reaped") from error
         else:
             return_code = self.process.returncode
-        for pipe in (self.process.stdin, self.process.stdout, self.process.stderr):
-            if pipe is not None:
-                pipe.close()
         return return_code
+
+    def close(self) -> int | None:
+        try:
+            if self.process.poll() is None:
+                try:
+                    self.request("quit")
+                    return self.process.wait(timeout=TERMINATE_GRACE_SECONDS)
+                except (AdapterError, subprocess.TimeoutExpired):
+                    pass
+            return self._stop_child()
+        finally:
+            for pipe in (self.process.stdin, self.process.stdout, self.process.stderr):
+                if pipe is not None:
+                    pipe.close()
 
 
 def action_command(payload: object) -> str:
@@ -169,6 +238,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         if path == "/api/state":
             try:
                 self._json(200, self.server.bridge.request("state"))
+            except SimulatorTimeoutError:
+                self._json(504, {"error": "simulator response timed out"})
             except AdapterError:
                 self._json(503, {"error": "simulator unavailable"})
             return
@@ -207,9 +278,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
         try:
             self._json(200, self.server.bridge.request(command))
-        except AdapterError as error:
-            status = 409 if str(error) == "invalid_state" else 400
+        except SimulatorTimeoutError:
+            self._json(504, {"error": "simulator response timed out"})
+        except SimulatorRejectedError:
+            status = 409
             self._json(status, {"error": "simulator action was not accepted"})
+        except AdapterError:
+            self._json(503, {"error": "simulator unavailable"})
 
 
 def main(argv: list[str] | None = None) -> int:

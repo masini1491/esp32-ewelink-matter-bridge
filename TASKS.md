@@ -4,7 +4,7 @@
 
 ### HC-001 — Bound simulator Web UI child IPC and shutdown
 
-Status: `READY`
+Status: `AWAITING_CHATGPT_RECONCILIATION`
 Priority: `P1`
 Campaign: `HC-2026-10-11` (four confirmed repository health-check corrections; sequential checkpoints)
 Repository: `masini1491/esp32-ewelink-matter-bridge`; branch: `main`; Project AI mode: `ChatGPT+Codex`.

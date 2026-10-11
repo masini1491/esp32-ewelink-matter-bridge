@@ -2,48 +2,44 @@
 
 ## Current Hot coordination
 
-### HC-002 — D1 malformed service type fails closed
+### HC-003 — B1 overlong JSON integer rejected safely
 
-Status: `AWAITING_CHATGPT_RECONCILIATION`
+Status: `READY`
 Priority: `P2`
 Campaign: `HC-2026-10-11`
 Repository: `masini1491/esp32-ewelink-matter-bridge`; branch: `main`; Project AI mode: `ChatGPT+Codex`.
-Producer-observed target pre-promotion `main`: `87d69db24acb54f66f9d6f3c6144742757cf9ca9`.
+Producer-observed target pre-promotion `main`: `535b7ce1ec1892da079dd824c6207ecee11bd411`.
 Playbook baseline: `main`; producer-observed revision: `65b6f1546cf3412aaa79ee272a752cdb4ca48f45`.
-Predecessor HC-001 passed ChatGPT remote reconciliation; exact-main GitHub Actions `validate` run `38113012284` concluded success. HC-001 completed history lives in Git history/`VALIDATION.md`, not active Hot.
+HC-001 and HC-002 completed independent ChatGPT remote reconciliation. HC-002 implementation commit `535b7ce1ec1892da079dd824c6207ecee11bd411`; associated Actions `host` job succeeded. Completion evidence remains in Git history and previous Stage contract, not an active Hot task.
 
-Goal: ensure malformed `service` values in offline D1 captures fail closed instead of raising `AttributeError` from `service.get()` before its type is checked. Preserve existing valid D1 analyzer behavior, classifications and evidence boundary.
+Goal: ensure JSON input containing overlong integer tokens within the existing 16 KiB cap is rejected with structured `REJECTED` / exit 2, without traceback or user-input echo. Preserve B1-E1's strict allowlist, sanitization, and evidence-status invariants.
 
-Current defect: `tools/ewelink_capture_analyzer.py` obtains `service = capture.get("service", {})`, then calls `service.get("txt", {})` and `service.get("name", "")` before verifying `service` is a dict. Input `service: null`, list, number or string crashes rather than returning `{"status":"MALFORMED","classification":"UNKNOWN"}`.
+Current defect: `tools/b1_device_evidence_intake.py` calls `json.loads(...)` in `parse_input` but its catch list omits the `ValueError` that Python's integer digit limit can raise for a 5,000-digit JSON number. This bypasses `IntakeError` and breaks the CLI fail-closed outcome. Do not relax interpreter-global integer security limits.
 
 Actor / execution:
-- ChatGPT owns planning, coordination and independent remote reconciliation. Codex owns only HC-002 authorized implementation and validation.
+- ChatGPT owns planning, coordination, and independent remote reconciliation. Codex owns only this Stage's authorized patch and validation.
 - Root model `GPT-6 Luna`; root reasoning `Medium`; one root agent; cheap-model evidence pass `No`; child delegation forecast `NONE`.
-- Only HC-002 is executable. HC-003/004 remain queued until explicitly promoted by ChatGPT after HC-002 is reconciled.
+- Only HC-003 is executable; HC-004 remains queued until ChatGPT separately reconciles HC-003 and promotes HC-004.
 
 Implementation contract:
-1. Validate `service` as a mapping/dict **before** any `.get()` or other mapping operations. Keep `txt` / `name` type checks and existing analyzer output contract.
-2. Invalid JSON-derived `service` types (`null`, array, number, string, boolean) must return `MALFORMED / UNKNOWN` as a structured result, without unhandled exceptions or raw input echo.
-3. Do not broaden to unrelated capture semantics, introduce new identity inference, or change D1 evidence/Network PASS classifications.
+1. Restrict the fix to the JSON integer parsing failure boundary; use bounded integer token handling or convert the specific parse failure into a safe `IntakeError` without echoing user values. Do not catch arbitrary unrelated failures and mislabel them as invalid input.
+2. Preserve the 16 KiB input size limit, all existing permitted fields, enum/type/range/precision checks, duplicate field rejection, and input/output non-overwrite semantics.
+3. Keep `candidate_unreconciled` and non-authoritative UIID/channel consistency diagnostics; never introduce real device facts or expand the B1 schema.
+4. Regression-test an overlong JSON integer (e.g., 5,000 digits) under the byte cap through both parser and CLI, explicitly asserting structured `REJECTED`, exit 2, no traceback/no input echo. Include ordinary JSON values, valid integer, existing malformed cases and secret redaction tests.
 
-Authorized mutation: `tools/ewelink_capture_analyzer.py`, `tests/test_capture_analyzer.py`, optional bounded `VALIDATION.md` HC-002 evidence, and `TASKS.md` HC-002 status only. No other tracked files.
+Authorized mutation:
+- `tools/b1_device_evidence_intake.py`
+- `tests/test_b1_device_evidence_intake.py`
+- `VALIDATION.md` only for bounded HC-003 evidence, if necessary
+- `TASKS.md` status bookkeeping only.
+Do not edit any other tracked file.
 
-Validation:
-- Add deterministic tests for malformed service types and invalid `txt` while preserving valid D1 fixtures and privacy/redaction behavior.
-- Run focused D1 tests plus relevant existing Python regression tests where feasible; `git diff --check` and changed-file scope.
-- If tests unavailable or unexpected neighboring defect requires scope expansion, STOP and report evidence without silently patching additional files.
-- No live eWeLink API/cloud, mDNS/LAN, device/hardware, firmware, Matter or commissioning operation; no inferred `CONFIRMED_LOCAL`, Network/Hardware/Matter PASS.
-- Commit/push, verify canonical remote HEAD/scope, set only HC-002 status to `AWAITING_CHATGPT_RECONCILIATION`, report, and STOP. Do not start HC-003/004.
+Validation / STOP:
+- Run focused B1 intake tests and relevant existing Python regression tests; run `git diff --check` and inspect scope. CMake/CTest or hardware/network/Matter tests are not required because this Stage does not touch the build or runtime contracts.
+- No arbitrary app export, screenshot/OCR, device/cloud/LAN/mDNS, hardware, firmware, Matter or secret ingestion; no factual B1 reconciliation or evidence-level promotion.
+- Commit and push, verify canonical remote HEAD/scope, update only HC-003 status to `AWAITING_CHATGPT_RECONCILIATION`, report exact validation, and STOP. Do not execute HC-004.
 
 ## Sequential follow-up checkpoints (not yet executable)
-
-### HC-003 — B1 overlong JSON integer rejected safely
-
-Status: `QUEUED_AFTER_HC-002_RECONCILIATION`
-Priority: `P2`
-Evidence: `tools/b1_device_evidence_intake.py` JSON parse of a 5,000-digit integer within the 16 KiB size cap can raise `ValueError` and produce traceback/exit 1, rather than safe structured `REJECTED`/exit 2.
-Goal: preserve 16 KiB and all existing B1-E1 strict/sanitized input contracts; bound integer parsing or classify this exact JSON numeric parse failure safely without echoing input values.
-Authorized implementation: `tools/b1_device_evidence_intake.py`, `tests/test_b1_device_evidence_intake.py`, optional bounded `VALIDATION.md` evidence, `TASKS.md` status bookkeeping. Tests cover overlong digits and safe output/exit code, ordinary valid JSON numbers, rejects, source precision, no secret echoes, existing suite and `git diff --check`. No acceptance of raw export, device evidence promotion, LAN, device or firmware work. Codex may act only after ChatGPT sets this Stage to `READY`; commit/push/status awaiting reconciliation, then STOP.
 
 ### HC-004 — Python unittest discovery compatibility
 

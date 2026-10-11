@@ -4,7 +4,7 @@
 
 ### HC-004 — Python unittest discovery compatibility
 
-Status: `READY`
+Status: `AWAITING_CHATGPT_RECONCILIATION`
 Priority: `P3`
 Revision: `HC-004-R1` — minimal discovery-package-marker allowance after read-only STOP; no prior implementation or validation PASS claimed.
 Campaign: `HC-2026-10-11` (final checkpoint)

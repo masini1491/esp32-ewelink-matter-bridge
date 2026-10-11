@@ -68,20 +68,13 @@ class FakeProcess:
             raise AssertionError("fake child was not stopped")
         return self.returncode
 
-_parser = argparse.ArgumentParser()
-_parser.add_argument("--adapter", type=Path, required=True)
-_parser.add_argument("--web-root", type=Path, required=True)
-_args, _unittest_args = _parser.parse_known_args()
-sys.argv = [sys.argv[0], *_unittest_args]
+_test_args: argparse.Namespace | None = None
 
 
 class SimulatorWebUiTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.adapter = _args.adapter.resolve()
-        cls.web_root = _args.web_root.resolve()
-
     def setUp(self) -> None:
+        self.adapter = _test_args.adapter.resolve() if _test_args is not None else None
+        self.web_root = _test_args.web_root.resolve() if _test_args is not None else None
         self.server: LoopbackServer | None = None
         self.bridge: SimulatorBridge | None = None
         self.thread: threading.Thread | None = None
@@ -90,6 +83,10 @@ class SimulatorWebUiTests(unittest.TestCase):
     def start_server(self) -> None:
         if self.server is not None:
             return
+        if self.adapter is None or self.web_root is None:
+            self.skipTest("built simulator adapter and web root are required; run the CTest simulator_webui_tests entry")
+        if not self.adapter.is_file() or not self.web_root.is_dir():
+            self.fail("configured simulator adapter or web root does not exist")
         self.server = LoopbackServer(self.adapter, self.web_root, port=0)
         self.bridge = self.server.bridge
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
@@ -332,4 +329,11 @@ class SimulatorWebUiTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    _parser = argparse.ArgumentParser()
+    _parser.add_argument("--adapter", type=Path)
+    _parser.add_argument("--web-root", type=Path)
+    _test_args, _unittest_args = _parser.parse_known_args()
+    if (_test_args.adapter is None) != (_test_args.web_root is None):
+        _parser.error("--adapter and --web-root must be provided together")
+    sys.argv = [sys.argv[0], *_unittest_args]
     unittest.main()
